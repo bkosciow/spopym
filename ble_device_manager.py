@@ -1,3 +1,5 @@
+import time
+
 import bluepy.btle as btle
 from queue import Queue
 
@@ -9,7 +11,6 @@ class ReadDelegate(btle.DefaultDelegate):
 
     def handleNotification(self, cHandle, data):
         self.device.append(data.decode("utf-8"), cHandle)
-        # print(cHandle, " >> ", data.decode("utf-8"))
 
 
 class Device:
@@ -36,22 +37,24 @@ class Device:
             self.read_buffor.get()
         self.read_buffor.put(data)
 
+    def pop(self):
+        return self.read_buffor.get()
+
     def read(self, uuid):
         return self.characteristics[uuid].read()
 
 
 class DeviceManager:
     def __init__(self):
-        """ service_uuid, (char1_uui, char2_uuid)"""
         self.devices = []
         self.services = {}
-        self.mapping = {}
+        self.aliases = {}
 
     def support_service(self, service, characteristics):
         self.services[service] = characteristics
 
-    def add_mapping(self, uuid, name):
-        self.mapping[name] = uuid
+    def add_alias(self, uuid, name):
+        self.aliases[name] = uuid
 
     def add(self, device):
         self.devices.append(device)
@@ -83,12 +86,24 @@ class DeviceManager:
 
         return ok
 
+    def get_notifications(self, wait=0.200):
+        for p in self.devices:
+            try:
+                p.device.waitForNotifications(wait)
+            except btle.BTLEDisconnectError as e:
+                self.remove(p)
+
+        return self.get_data_from_devices()
+
     def remove(self, device):
         self.devices.remove(device)
 
     def get_data_from_devices(self):
+        ret = {}
         for device in self.devices:
-            print(device.device.addr, device.read_buffor.get())
+            ret[device.device.addr] = device.pop()
+
+        return ret
 
     def write_to_characteristic(self, uuid, data):
         for device in self.devices:
