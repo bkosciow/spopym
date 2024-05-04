@@ -1,4 +1,8 @@
 import bluepy.btle as btle
+import threading
+import time
+import logging
+logger = logging.getLogger(__name__)
 
 
 def scan(length=3):
@@ -11,3 +15,36 @@ def scan(length=3):
         pass
 
     return devices
+
+
+class Scanner(threading.Thread):
+    def __init__(self, device_manager, _time=3, _sleep=60):
+        super().__init__()
+        self.ignore_macs = []
+        self.device_manager = device_manager
+        self.work = True
+        self.time = _time
+        self.sleep = _sleep
+
+    def scan(self):
+        devices = None
+        while not devices:
+            devices = scan(self.time)
+            time.sleep(0.5)
+
+        return devices
+
+    def run(self):
+        while self.work:
+            logging.debug("executing scan")
+            devices = self.scan()
+            for dev in devices:
+                logging.debug("found %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
+                if not self.device_manager.exists(dev) and self.device_manager.add_if_supported(dev):
+                    logging.debug('Adding device %s to manager: ', dev.addr)
+            time.sleep(self.sleep)
+
+    def stop(self):
+        self.work = False
+
+
