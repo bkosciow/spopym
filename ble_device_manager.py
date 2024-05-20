@@ -86,4 +86,7 @@ class DeviceManager:
     def write_to_characteristic(self, uuid, data):
         for device in self.devices:
             if device.support_characteristic(uuid):
-                device.write(uuid, data)
+                try:
+                    device.write(uuid, data)
+                except btle.BTLEException as e:
+                    logger.error(e)

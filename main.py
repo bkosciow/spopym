@@ -28,28 +28,6 @@ deviceManger.add_alias('66b2c551-50df-4188-a436-d6858835fbe0', "player")
 SCAN_TIME = 3
 
 scanerThread.start()
-while True:
-    time.sleep(10)
-    print("tick")
-    print(deviceManger.devices)
-
-
-devices = None
-
-while not devices:
-    devices = scan()
-    time.sleep(0.5)
-
-
-for dev in devices:
-    print("Device %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
-    if dev.addrType != "random":
-        print("checking: ", dev.addr)
-        if deviceManger.add_if_supported(dev):
-            print('Adding ', dev.addr)
-
-print("scanned")
-print(deviceManger.devices)
 
 time.sleep(0.5)
 while True:
@@ -59,5 +37,4 @@ while True:
         d = time.asctime()
         deviceManger.write_to_characteristic('66b2c551-50df-4188-a436-d6858835fbe2', bytes(d+"\n", "utf-8"))
 
-    time.sleep(0.1)
-
+    time.sleep(0.2)
