@@ -66,10 +66,14 @@ class DeviceManager:
     def get_notifications(self, wait=0.100):
         for p in self.devices:
             try:
-                p.device.waitForNotifications(wait)
+                if p.device._helper:
+                    p.device.waitForNotifications(wait)
+                else:
+                    self.remove(p)
             except btle.BTLEDisconnectError as e:
                 logger.debug("Dropping device %s ", p.device.addr)
                 self.remove(p)
+            # except
 
         return self.get_data_from_devices()
 
@@ -90,3 +94,7 @@ class DeviceManager:
                     device.write(uuid, data)
                 except btle.BTLEException as e:
                     logger.error(e)
+                    if "Helper not started" in str(e):
+                        self.remove(device)
+
+
