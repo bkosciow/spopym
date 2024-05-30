@@ -26,7 +26,7 @@ class Device:
         self.read_buffer.put(data)
 
     def pop(self):
-        return self.read_buffer.get()
+        return None if self.read_buffer.empty() else self.read_buffer.get()
 
     def read(self, uuid):
         return self.characteristics[uuid].read()
