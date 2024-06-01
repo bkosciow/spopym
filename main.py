@@ -2,7 +2,13 @@ import random
 import time
 from ble_device_manager import DeviceManager
 from ble_scanner import *
+from menu import Menu
 import logging
+import RPi.GPIO
+from lcd import Display
+from gpiozero import RotaryEncoder, Button
+
+RPi.GPIO.setmode(RPi.GPIO.BCM)
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -10,31 +16,90 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+rotor = RotaryEncoder(19, 26, wrap=True, max_steps=180)
+btn = Button(21, pull_up=False)
 
-SERVICES = {
-    '66b2c551-50df-4188-a436-d6858835fbe0': ['66b2c551-50df-4188-a436-d6858835fbe1', '66b2c551-50df-4188-a436-d6858835fbe2'],
-}
+display = Display()
 
-deviceManger = DeviceManager()
-scanerThread = Scanner(deviceManger, _sleep=10)
+encoder_last = 0
 
-for service in SERVICES:
-    deviceManger.support_service(service, SERVICES[service])
+def menu_click(name):
+    print(name)
 
-deviceManger.add_alias('66b2c551-50df-4188-a436-d6858835fbe2', "lcd")
-deviceManger.add_alias('66b2c551-50df-4188-a436-d6858835fbe1', "button")
-deviceManger.add_alias('66b2c551-50df-4188-a436-d6858835fbe0', "player")
 
-SCAN_TIME = 3
+MENU_OPTIONS = [
+    {
+        'name': 'First',
+        'callback': menu_click
+    },
+    {
+        'name': 'Bluetooth',
+        'options': [
+            {
+                'name': 'Rescan',
+                'callback': menu_click,
+            }
+        ]
+    },
+    {
+        'name': 'Shutdown',
+        'callback': menu_click,
+    },
+]
+menu = Menu(MENU_OPTIONS, display)
 
-scanerThread.start()
 
-time.sleep(0.5)
+def rotate_encoder():
+    global encoder_last
+    if encoder_last < rotor.steps:
+        menu.move_down()
+    else:
+        menu.move_up()
+    encoder_last = rotor.steps
+    print(rotor.steps)
+
+
+def activate():
+    menu.activate()
+    print("clicked")
+
+
+rotor.when_rotated = rotate_encoder
+btn.when_released = activate
+
+
+menu.start()
+
 while True:
-    nots = deviceManger.get_notifications(0.100)
-    print(nots)
-    if random.randint(0, 10) > 7:
-        d = time.asctime()
-        deviceManger.write_to_characteristic('66b2c551-50df-4188-a436-d6858835fbe2', bytes(d+"\n", "utf-8"))
+    time.sleep(1)
 
-    time.sleep(0.2)
+# menu.move_down()
+# menu.move_down()
+
+# SERVICES = {
+#     '66b2c551-50df-4188-a436-d6858835fbe0': ['66b2c551-50df-4188-a436-d6858835fbe1', '66b2c551-50df-4188-a436-d6858835fbe2'],
+# }
+#
+# deviceManger = DeviceManager()
+# scanerThread = Scanner(deviceManger, _sleep=10)
+#
+# for service in SERVICES:
+#     deviceManger.support_service(service, SERVICES[service])
+#
+# deviceManger.add_alias('66b2c551-50df-4188-a436-d6858835fbe2', "lcd")
+# deviceManger.add_alias('66b2c551-50df-4188-a436-d6858835fbe1', "button")
+# deviceManger.add_alias('66b2c551-50df-4188-a436-d6858835fbe0', "player")
+#
+# SCAN_TIME = 3
+#
+# scanerThread.start()
+#
+# time.sleep(0.5)
+# while True:
+#     nots = deviceManger.get_notifications(0.100)
+#     print(nots)
+#     if random.randint(0, 10) > 7:
+#         d = time.asctime()
+#         deviceManger.write_to_characteristic('66b2c551-50df-4188-a436-d6858835fbe2', bytes(d+"\n", "utf-8"))
+#
+#     time.sleep(0.2)
