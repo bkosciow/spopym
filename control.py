@@ -12,11 +12,10 @@ class Control:
 
     def rotate_encoder(self):
         if self.encoder_last < self.rotor.steps:
-            self.callback('encoder_dec') #menu.move_down()
+            self.callback('encoder_dec')
         else:
-            self.callback('encoder_inc') #menu.move_up()
+            self.callback('encoder_inc')
         self.encoder_last = self.rotor.steps
-        print(self.rotor.steps)
 
     def click_encoder(self):
         self.callback('encoder_click')

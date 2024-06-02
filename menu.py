@@ -9,10 +9,12 @@ class Menu:
             'selected': "> ",
             "dir": " >>",
             'not_dir': "   ",
+            'back': ' <back> ',
         }
         self.level = None
         self.position = 0
         self.top_offset = 0
+        self.close_event = None
 
     def start(self):
         self.level = []
@@ -31,6 +33,16 @@ class Menu:
                 else:
                     current = current[i]['options']
 
+        has_back = False
+        for item in current:
+            if self.markers['back'] == item['name']:
+                has_back = True
+        if not has_back:
+            current.append({
+                'name': self.markers['back'],
+                'callback': self.back
+            })
+
         return current
 
     def draw(self):
@@ -38,7 +50,6 @@ class Menu:
         for item in self._get_current_menu():
             is_dir = self.markers['dir'] if 'options' in item else self.markers['not_dir']
             is_selected = self.markers['selected'] if idx == self.position else self.markers['not_selected']
-            # print(item)
             print(is_selected + item['name'] + is_dir)
             self.lcd.write(is_selected + item['name'] + is_dir, 0, idx + self.top_offset)
             idx += 1
@@ -64,14 +75,20 @@ class Menu:
         self.draw()
 
     def activate(self):
-        print(self.position)
-        print(self.level)
         current = self._get_current_menu()[self.position]
-        print(current)
         if 'callback' in current and current['callback'] is not None:
             current['callback'](current['name'])
         elif 'options' in current:
             self.level.append(self.position)
+            self.position = 0
+            self.lcd.clear()
+            self.draw()
+
+    def back(self, action):
+        if len(self.level) == 0:
+            self.close_event('close_menu')
+        else:
+            self.level.pop()
             self.position = 0
             self.lcd.clear()
             self.draw()

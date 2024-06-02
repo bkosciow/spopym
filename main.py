@@ -39,6 +39,13 @@ class Workflow:
             if self.state == 'menu':
                 self.menu.move_down()
 
+        if action == 'close_menu':
+            if self.state == 'menu':
+                self.state = 'main'
+                display.clear()
+                display.show_main()
+
+
     def menu_action(self, name):
         print("menu_action ", name)
 
@@ -63,9 +70,17 @@ MENU_OPTIONS = [
                         ]
                     }
                 ]
+            },
+            {
+                'name': 'Second  - two',
+                'options': [
+                    {
+                        'name': '3rd from 2nd2',
+                        'callback': workflow.menu_action
+                    }
+                ]
             }
         ]
-        # 'callback': workflow.menu_action
     },
     {
         'name': 'Bluetooth',
@@ -83,8 +98,11 @@ MENU_OPTIONS = [
 ]
 
 display = Display()
+
 menu = Menu(MENU_OPTIONS, display)
+menu.close_event = workflow.control_callback
 workflow.menu = menu
+
 control = Control()
 control.callback = workflow.control_callback
 
