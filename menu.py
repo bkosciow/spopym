@@ -1,6 +1,5 @@
 
 
-
 class Menu:
     def __init__(self, menu, lcd):
         self.menu = menu
@@ -16,26 +15,32 @@ class Menu:
         self.top_offset = 0
 
     def start(self):
-        self.level = None
+        self.level = []
         self.position = 0
+        self.lcd.clear()
         self.draw()
 
     def _get_current_menu(self):
         if not self.level:
             current = self.menu
         else:
-            current = self.menu[self.level[0]]
+            current = None
+            for i in self.level:
+                if not current:
+                    current = self.menu[i]['options']
+                else:
+                    current = current[i]['options']
 
         return current
 
     def draw(self):
-
         idx = 0
         for item in self._get_current_menu():
             is_dir = self.markers['dir'] if 'options' in item else self.markers['not_dir']
             is_selected = self.markers['selected'] if idx == self.position else self.markers['not_selected']
+            # print(item)
+            print(is_selected + item['name'] + is_dir)
             self.lcd.write(is_selected + item['name'] + is_dir, 0, idx + self.top_offset)
-            # print(is_selected + item['name'] + is_dir)
             idx += 1
 
         self.lcd.flush()
@@ -65,3 +70,9 @@ class Menu:
         print(current)
         if 'callback' in current and current['callback'] is not None:
             current['callback'](current['name'])
+        elif 'options' in current:
+            self.level.append(self.position)
+            self.position = 0
+            self.lcd.clear()
+            self.draw()
+

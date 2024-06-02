@@ -6,7 +6,7 @@ from menu import Menu
 import logging
 import RPi.GPIO
 from lcd import Display
-from gpiozero import RotaryEncoder, Button
+from control import Control
 
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 
@@ -16,59 +16,80 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-rotor = RotaryEncoder(19, 26, wrap=True, max_steps=180)
-btn = Button(21, pull_up=False)
 
-display = Display()
+class Workflow:
+    def __init__(self, menu=None):
+        self.menu = menu
+        self.state = 'main'
 
-encoder_last = 0
+    def control_callback(self, action):
+        print("control_callback ", action)
+        if action == 'encoder_click':
+            if self.state == 'main':
+                self.state = 'menu'
+                self.menu.start()
+            elif self.state == 'menu':
+                self.menu.activate()
 
-def menu_click(name):
-    print(name)
+        if action == 'encoder_inc':
+            if self.state == 'menu':
+                self.menu.move_up()
 
+        if action == 'encoder_dec':
+            if self.state == 'menu':
+                self.menu.move_down()
+
+    def menu_action(self, name):
+        print("menu_action ", name)
+
+
+
+workflow = Workflow()
 
 MENU_OPTIONS = [
     {
         'name': 'First',
-        'callback': menu_click
+        'options': [
+            {
+                'name': 'Second',
+                'options': [
+                    {
+                        'name': 'Third',
+                        'options': [
+                            {
+                                'name': 'fourth',
+                                'callback': workflow.menu_action
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+        # 'callback': workflow.menu_action
     },
     {
         'name': 'Bluetooth',
         'options': [
             {
                 'name': 'Rescan',
-                'callback': menu_click,
+                'callback': workflow.menu_action,
             }
         ]
     },
     {
         'name': 'Shutdown',
-        'callback': menu_click,
+        'callback': workflow.menu_action,
     },
 ]
+
+display = Display()
 menu = Menu(MENU_OPTIONS, display)
+workflow.menu = menu
+control = Control()
+control.callback = workflow.control_callback
 
-
-def rotate_encoder():
-    global encoder_last
-    if encoder_last < rotor.steps:
-        menu.move_down()
-    else:
-        menu.move_up()
-    encoder_last = rotor.steps
-    print(rotor.steps)
-
-
-def activate():
-    menu.activate()
-    print("clicked")
-
-
-rotor.when_rotated = rotate_encoder
-btn.when_released = activate
-
-
-menu.start()
+display.clear()
+display.show_main()
 
 while True:
     time.sleep(1)

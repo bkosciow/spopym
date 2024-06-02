@@ -26,7 +26,7 @@ class Scanner(threading.Thread):
         self.time = _time
         self.sleep = _sleep
 
-    def scan(self):
+    def _scan(self):
         devices = None
         while not devices:
             devices = scan(self.time)
@@ -34,14 +34,17 @@ class Scanner(threading.Thread):
 
         return devices
 
+    def scan(self):
+        logging.debug("executing scan")
+        devices = self._scan()
+        for dev in devices:
+            logging.debug("found %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
+            if not self.device_manager.exists(dev) and self.device_manager.add_if_supported(dev):
+                logging.debug('Adding device %s to manager: ', dev.addr)
+
     def run(self):
         while self.work:
-            logging.debug("executing scan")
-            devices = self.scan()
-            for dev in devices:
-                logging.debug("found %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
-                if not self.device_manager.exists(dev) and self.device_manager.add_if_supported(dev):
-                    logging.debug('Adding device %s to manager: ', dev.addr)
+            self.scan()
             time.sleep(self.sleep)
 
     def stop(self):
