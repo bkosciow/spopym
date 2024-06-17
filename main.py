@@ -7,6 +7,7 @@ import logging
 import RPi.GPIO
 from lcd import Display
 from control import Control
+from workflow import Workflow
 
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 
@@ -16,42 +17,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+display = Display()
 
-class Workflow:
-    def __init__(self, menu=None):
-        self.menu = menu
-        self.state = 'main'
-
-    def control_callback(self, action):
-        print("control_callback ", action)
-        if action == 'encoder_click':
-            if self.state == 'main':
-                self.state = 'menu'
-                self.menu.start()
-            elif self.state == 'menu':
-                self.menu.activate()
-
-        if action == 'encoder_inc':
-            if self.state == 'menu':
-                self.menu.move_up()
-
-        if action == 'encoder_dec':
-            if self.state == 'menu':
-                self.menu.move_down()
-
-        if action == 'close_menu':
-            if self.state == 'menu':
-                self.state = 'main'
-                display.clear()
-                display.show_main()
-
-
-    def menu_action(self, name):
-        print("menu_action ", name)
-
-
-
-workflow = Workflow()
+workflow = Workflow(display)
 
 MENU_OPTIONS = [
     {
@@ -97,8 +65,6 @@ MENU_OPTIONS = [
     },
 ]
 
-display = Display()
-
 menu = Menu(MENU_OPTIONS, display)
 menu.close_event = workflow.control_callback
 workflow.menu = menu
@@ -112,8 +78,6 @@ display.show_main()
 while True:
     time.sleep(1)
 
-# menu.move_down()
-# menu.move_down()
 
 # SERVICES = {
 #     '66b2c551-50df-4188-a436-d6858835fbe0': ['66b2c551-50df-4188-a436-d6858835fbe1', '66b2c551-50df-4188-a436-d6858835fbe2'],

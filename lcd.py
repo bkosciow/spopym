@@ -27,10 +27,7 @@ class Display:
         self.lcd.write("IP: ", 0, 2)
         self.lcd.flush(True)
 
-
     def clear(self):
         for i in range(0, self.lcd.height-1):
             self.lcd.write(" "*(self.lcd.width-1), 0, i)
         self.lcd.flush(True)
-
-
