@@ -1,8 +1,17 @@
 
+class MenuItem():
+    def __init__(self, label, action_name=None, callback=None,
+                 options=None, generator=None):
+        self.label = label
+        self.action_name = action_name
+        self.callback = callback
+        self.generator = generator
+        self.options = options
+
 
 class Menu:
-    def __init__(self, menu, lcd):
-        self.menu = menu
+    def __init__(self, config, lcd):
+        self.menu = None
         self.lcd = lcd
         self.markers = {
             'not_selected': "  ",
@@ -15,6 +24,9 @@ class Menu:
         self.position = 0
         self.top_offset = 1
         self.close_event = None
+
+    def add_menu(self, menu):
+        self.menu = menu
 
     def start(self):
         self.level = []
@@ -78,14 +90,9 @@ class Menu:
         current = self._get_current_menu()[self.position]
         if 'callback' in current and current['callback'] is not None:
             current['callback'](current['name'])
-        elif 'generator' in current:
-            # current['options'] = []
+        if 'generator' in current:
             current['options'] = current['generator']()
-            self.level.append(self.position)
-            self.position = 0
-            self.lcd.clear()
-            self.draw()
-        elif 'options' in current:
+        if 'options' in current:
             self.level.append(self.position)
             self.position = 0
             self.lcd.clear()

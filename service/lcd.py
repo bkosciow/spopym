@@ -8,9 +8,8 @@ RPi.GPIO.setmode(RPi.GPIO.BCM)
 
 
 class Display:
-    def __init__(self, config, spotify=None):
+    def __init__(self, config):
         self.config = config
-        self.spotify = spotify
         drv = SPI()
         self.size = (128, 64)
         self.raw_lcd = SSD1306(self.size[0], self.size[1], drv)
@@ -27,10 +26,12 @@ class Display:
         ip = check_output(['hostname', '-I']).decode('utf8')
         self.lcd.write(ip.strip(), 0, 0)
         self.lcd.write("BLE: ", 0, 1)
-        if not self.spotify.has_token:
+        if not self.config.get_param("spotify_token"):
             self.lcd.write("Spotify: D/C", 0, 2)
+            self.lcd.write("[ ]", 10, 7)
         else:
             self.lcd.write("[default]", 0, 2)
+            self.lcd.write("[S]", 10, 7)
 
         if self.config.get_param('use_message'):
             self.lcd.write("[M]", 13, 7)
@@ -41,7 +42,7 @@ class Display:
 
     def show_authorize(self):
         self.lcd.write("Go to terminal", 0, 1)
-        self.lcd.write("and run:", 0, 2)
+        self.lcd.write("and run: ", 0, 2)
         self.lcd.write("auth.py", 2, 4)
 
         self.lcd.write("Then restart app", 0, 6)
@@ -53,7 +54,7 @@ class Display:
         self.lcd.flush(True)
 
     def clear(self):
-        for i in range(0, self.lcd.height-1):
+        for i in range(0, self.lcd.height):
             self.lcd.write(" "*(self.lcd.width), 0, i)
         self.lcd.flush(True)
 

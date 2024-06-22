@@ -38,6 +38,9 @@ class Config(object):
     def get_param(self, name):
         return self.parameters[name]
 
+    def set_param(self, name, value):
+        self.parameters[name] = value
+
     def init_message(self):
         if self.get("message.node_name"):
             from iot_message.message import Message

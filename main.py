@@ -1,11 +1,11 @@
 from bluetooth.ble_scanner import *
-from menu import Menu
+from service.menu import Menu
 import logging
 import RPi.GPIO
-from lcd import Display
+from service.lcd import Display
 from control import Control
-from workflow import Workflow
-from spotify import Spotify
+from service.workflow import Workflow
+from service.spotify import Spotify
 import signal
 from service.config import Config
 
@@ -17,53 +17,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
 cfg = Config()
 
 spotify = Spotify(cfg)
-display = Display(cfg, spotify=spotify)
-spotify.lcd = display
+display = Display(cfg)
+# spotify.lcd = display
 
-workflow = Workflow(display)
+menu = Menu(cfg, display)
+workflow = Workflow(cfg, display, menu, spotify)
+menu.close_event = workflow.control_callback
+
+control = Control()
+control.callback = workflow.control_callback
+
+spotify.auth_callback = workflow.control_callback
 
 MENU_OPTIONS = [
-    # {
-    #     'name': 'First',
-    #     'options': [
-    #         {
-    #             'name': 'Second',
-    #             'options': [
-    #                 {
-    #                     'name': 'Third',
-    #                     'options': [
-    #                         {
-    #                             'name': 'fourth',
-    #                             'callback': workflow.menu_action
-    #                         }
-    #                     ]
-    #                 }
-    #             ]
-    #         },
-    #         {
-    #             'name': 'Second  - two',
-    #             'options': [
-    #                 {
-    #                     'name': '3rd from 2nd2',
-    #                     'callback': workflow.menu_action
-    #                 }
-    #             ]
-    #         }
-    #     ]
-    # },
-    # {
-    #     'name': 'Bluetooth',
-    #     'options': [
-    #         {
-    #             'name': 'Rescan',
-    #             'callback': workflow.menu_action,
-    #         }
-    #     ]
-    # },
     {
         'name': 'Spotify',
         'generator': spotify.get_menu,
@@ -74,12 +43,7 @@ MENU_OPTIONS = [
     },
 ]
 
-menu = Menu(MENU_OPTIONS, display)
-menu.close_event = workflow.control_callback
-workflow.menu = menu
-
-control = Control()
-control.callback = workflow.control_callback
+menu.add_menu(MENU_OPTIONS)
 
 display.clear()
 display.show_main()

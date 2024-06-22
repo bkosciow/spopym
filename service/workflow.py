@@ -2,7 +2,8 @@ import os
 
 
 class Workflow:
-    def __init__(self, lcd, menu=None, spotify=None):
+    def __init__(self, config, lcd, menu=None, spotify=None):
+        self.config = config
         self.menu = menu
         self.lcd = lcd
         self.state = 'main'
