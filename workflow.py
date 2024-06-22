@@ -1,8 +1,13 @@
+import os
+
+
 class Workflow:
-    def __init__(self, lcd, menu=None):
+    def __init__(self, lcd, menu=None, spotify=None):
         self.menu = menu
         self.lcd = lcd
         self.state = 'main'
+        self.spotify = spotify
+        self.app_works = True
 
     def control_callback(self, action):
         print("control_callback ", action)
@@ -29,3 +34,7 @@ class Workflow:
 
     def menu_action(self, name):
         print("menu_action ", name)
+        if name == 'Shutdown':
+            self.lcd.shutdown()
+            self.app_works = False
+            # os.system("sudo shutdown -h now")

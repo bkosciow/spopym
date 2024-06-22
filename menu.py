@@ -13,7 +13,7 @@ class Menu:
         }
         self.level = None
         self.position = 0
-        self.top_offset = 0
+        self.top_offset = 1
         self.close_event = None
 
     def start(self):
@@ -48,7 +48,7 @@ class Menu:
     def draw(self):
         idx = 0
         for item in self._get_current_menu():
-            is_dir = self.markers['dir'] if 'options' in item else self.markers['not_dir']
+            is_dir = self.markers['dir'] if 'options' in item or 'generator' in item else self.markers['not_dir']
             is_selected = self.markers['selected'] if idx == self.position else self.markers['not_selected']
             print(is_selected + item['name'] + is_dir)
             self.lcd.write(is_selected + item['name'] + is_dir, 0, idx + self.top_offset)
@@ -78,6 +78,13 @@ class Menu:
         current = self._get_current_menu()[self.position]
         if 'callback' in current and current['callback'] is not None:
             current['callback'](current['name'])
+        elif 'generator' in current:
+            # current['options'] = []
+            current['options'] = current['generator']()
+            self.level.append(self.position)
+            self.position = 0
+            self.lcd.clear()
+            self.draw()
         elif 'options' in current:
             self.level.append(self.position)
             self.position = 0

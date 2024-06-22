@@ -1,13 +1,13 @@
-import random
-import time
-from ble_device_manager import DeviceManager
-from ble_scanner import *
+from bluetooth.ble_scanner import *
 from menu import Menu
 import logging
 import RPi.GPIO
 from lcd import Display
 from control import Control
 from workflow import Workflow
+from spotify import Spotify
+import signal
+from service.config import Config
 
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 
@@ -17,47 +17,56 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-display = Display()
+
+cfg = Config()
+
+spotify = Spotify(cfg)
+display = Display(cfg, spotify=spotify)
+spotify.lcd = display
 
 workflow = Workflow(display)
 
 MENU_OPTIONS = [
+    # {
+    #     'name': 'First',
+    #     'options': [
+    #         {
+    #             'name': 'Second',
+    #             'options': [
+    #                 {
+    #                     'name': 'Third',
+    #                     'options': [
+    #                         {
+    #                             'name': 'fourth',
+    #                             'callback': workflow.menu_action
+    #                         }
+    #                     ]
+    #                 }
+    #             ]
+    #         },
+    #         {
+    #             'name': 'Second  - two',
+    #             'options': [
+    #                 {
+    #                     'name': '3rd from 2nd2',
+    #                     'callback': workflow.menu_action
+    #                 }
+    #             ]
+    #         }
+    #     ]
+    # },
+    # {
+    #     'name': 'Bluetooth',
+    #     'options': [
+    #         {
+    #             'name': 'Rescan',
+    #             'callback': workflow.menu_action,
+    #         }
+    #     ]
+    # },
     {
-        'name': 'First',
-        'options': [
-            {
-                'name': 'Second',
-                'options': [
-                    {
-                        'name': 'Third',
-                        'options': [
-                            {
-                                'name': 'fourth',
-                                'callback': workflow.menu_action
-                            }
-                        ]
-                    }
-                ]
-            },
-            {
-                'name': 'Second  - two',
-                'options': [
-                    {
-                        'name': '3rd from 2nd2',
-                        'callback': workflow.menu_action
-                    }
-                ]
-            }
-        ]
-    },
-    {
-        'name': 'Bluetooth',
-        'options': [
-            {
-                'name': 'Rescan',
-                'callback': workflow.menu_action,
-            }
-        ]
+        'name': 'Spotify',
+        'generator': spotify.get_menu,
     },
     {
         'name': 'Shutdown',
@@ -75,8 +84,20 @@ control.callback = workflow.control_callback
 display.clear()
 display.show_main()
 
-while True:
-    time.sleep(1)
+
+def shutdown():
+    # menu.shutdown()
+    display.shutdown()
+    control.shutdown()
+
+
+signal.signal(signal.SIGTERM, shutdown)
+
+try:
+    while workflow.app_works:
+        time.sleep(1)
+except KeyboardInterrupt:
+    shutdown()
 
 
 # SERVICES = {

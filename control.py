@@ -1,10 +1,10 @@
-from gpiozero import RotaryEncoder, Button
+from gpiozero import RotaryEncoder, Button, LED
 
 
 class Control:
     def __init__(self, callback=None):
         self.rotor = RotaryEncoder(19, 26, wrap=True, max_steps=180)
-        self.rotor_btn = Button(21, pull_up=False)
+        self.rotor_btn = Button(21, pull_up=False, bounce_time=0.100)
         self.encoder_last = 0
         self.callback = callback
         self.rotor.when_rotated = self.rotate_encoder
@@ -19,6 +19,9 @@ class Control:
         self.button_three.when_released = self.click_button
         self.button_four.when_released = self.click_button
 
+        self.power_led = LED(4)
+        self.power_led.on()
+
     def rotate_encoder(self):
         if self.encoder_last < self.rotor.steps:
             self.callback('encoder_dec')
@@ -31,3 +34,6 @@ class Control:
 
     def click_button(self, v):
         self.callback(v.pin)
+
+    def shutdown(self):
+        self.power_led.off()

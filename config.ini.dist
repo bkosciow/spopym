@@ -1,0 +1,15 @@
+[global]
+
+
+[message]
+node_name=spotify-node
+encoder=iot_message.cryptor.aes_sha1
+encoder_params=abcdef2345678901,2345678901abcdef,0123456789abcdef,mypassphrase
+ip=192.168.1.255
+port=5053
+
+[spotify]
+client_id='aaa'
+client_secret='bbb'
+redirect_uri='http://127.0.0.1:9090'
+scope='user-read-playback-state,user-modify-playback-state'
