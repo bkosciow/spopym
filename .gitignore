@@ -17,3 +17,4 @@ sdist/
 __pycache__/
 .tox
 config.ini
+.cache
