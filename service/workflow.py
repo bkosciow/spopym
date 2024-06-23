@@ -2,7 +2,7 @@ import os
 
 
 class Workflow:
-    def __init__(self, config, lcd, menu=None, spotify=None):
+    def __init__(self, config, lcd, menu, spotify):
         self.config = config
         self.menu = menu
         self.lcd = lcd
@@ -35,7 +35,9 @@ class Workflow:
 
     def menu_action(self, name):
         print("menu_action ", name)
-        if name == 'Shutdown':
+        if name == 'sys.shutdown':
             self.lcd.shutdown()
             self.app_works = False
             # os.system("sudo shutdown -h now")
+        if name == 'spotify.connect':
+            self.lcd.show_authorize()

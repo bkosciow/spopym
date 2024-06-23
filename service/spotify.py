@@ -1,6 +1,7 @@
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
+from service.menu import MenuItem
 
 
 class Spotify:
@@ -19,11 +20,7 @@ class Spotify:
     def get_menu(self):
         if not self.config.get_param("spotify_token"):
             return [
-                {
-                    'name': 'Connect',
-                    'callback': self.auth_callback
-                }
+                MenuItem('Connect', action_name='spotify.connect', callback=self.auth_callback)
             ]
-
         else:
             return []
