@@ -27,17 +27,19 @@ class Workflow:
             if self.state == 'menu':
                 self.menu.move_down()
 
-        if action == 'close_menu':
+        if action == 'close_menu' or action == 'GPIO16':
             if self.state == 'menu':
                 self.state = 'main'
                 self.lcd.clear()
                 self.lcd.show_main()
 
-    def menu_action(self, name):
-        print("menu_action ", name)
+    def menu_action(self, name, params=[]):
+        print("menu_action ", name, params)
         if name == 'sys.shutdown':
             self.lcd.shutdown()
             self.app_works = False
             # os.system("sudo shutdown -h now")
         if name == 'spotify.connect':
             self.lcd.show_authorize()
+        if name == 'spotify.device':
+            self.config.set_param('spotify.device', params)

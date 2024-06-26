@@ -27,6 +27,7 @@ workflow = Workflow(cfg, display, menu, spotify)
 menu.close_event = workflow.control_callback
 control.callback = workflow.control_callback
 spotify.auth_callback = workflow.menu_action
+spotify.menu_callback = workflow.menu_action
 
 menu.add_menu_item(MenuItem('Spotify', generator=spotify.get_menu))
 menu.add_menu_item(MenuItem('Shutdown', action_name="sys.shutdown", callback=workflow.menu_action))

@@ -33,7 +33,7 @@ class Control:
         self.callback('encoder_click')
 
     def click_button(self, v):
-        self.callback(v.pin)
+        self.callback(str(v.pin))
 
     def shutdown(self):
         self.power_led.off()

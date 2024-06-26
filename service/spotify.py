@@ -16,6 +16,7 @@ class Spotify:
         ))
         self.config.set_param("spotify_token", False if self.spotify.auth_manager.get_cached_token() is None else True)
         self.auth_callback = None
+        self.menu_callback = None
 
     def get_menu(self):
         if not self.config.get_param("spotify_token"):
@@ -23,4 +24,15 @@ class Spotify:
                 MenuItem('Connect', action_name='spotify.connect', callback=self.auth_callback)
             ]
         else:
-            return []
+            menu = MenuItem('Devices', options=[])
+            menu.add(MenuItem('default', action_name="spotify.device", callback=self.menu_callback, params={'id': None, 'name': 'default'}))
+            devices = self.get_devices()
+            for device in devices['devices']:
+                menu.add(
+                    MenuItem(device['name'], action_name="spotify.device", callback=self.menu_callback, params={'id': device['id'], 'name': device['name']})
+                )
+            return [menu]
+
+    def get_devices(self):
+        devices = self.spotify.devices()
+        return devices

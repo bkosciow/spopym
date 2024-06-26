@@ -1,12 +1,13 @@
 
 class MenuItem:
     def __init__(self, label, action_name=None, callback=None,
-                 options=None, generator=None):
+                 options=None, generator=None, params=None):
         self.label = label
         self.action_name = action_name
         self.callback = callback
         self.generator = generator
         self.options = options
+        self.params = params
 
     def add(self, menu_item):
         self.options.append(menu_item)
@@ -96,7 +97,7 @@ class Menu:
         menu_item = self._get_current_menu_item()
         current = menu_item.options[self.position]
         if current.callback is not None:
-            current.callback(current.action_name)
+            current.callback(current.action_name, current.params)
         if current.generator is not None:
             current.options = current.generator()
         if current.options is not None:
@@ -105,7 +106,7 @@ class Menu:
             self.lcd.clear()
             self.draw()
 
-    def back(self, action):
+    def back(self, action, params=[]):
         if len(self.level) == 0:
             self.close_event('close_menu')
         else:
