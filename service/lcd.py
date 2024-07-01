@@ -30,7 +30,8 @@ class Display:
             self.lcd.write("Spotify: D/C", 0, 2)
             self.lcd.write("[ ]", 10, 7)
         else:
-            self.lcd.write(self.config.get_param('spotify.device')['name'], 0, 6)
+            self.lcd.write(self.config.get_param('spotify.device')['name'].ljust(self.lcd.width), 0, 6)
+            self.lcd.write(str(self.config.get_param('spotify.device')['volume']).ljust(3), 0, 7)
             self.lcd.write("[S]", 10, 7)
 
         if self.config.get_param('use_message'):

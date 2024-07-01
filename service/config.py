@@ -12,7 +12,10 @@ class Config(object):
         self.config.read(file)
         self.parameters = {
             'use_message': False,
-            'spotify.device': {'id': None, 'name': 'default'}
+            'spotify.device': {'id': None, 'name': '- - - - -', 'volume': 0},
+            'spotify.volume.step': 5,
+            'spotify.use_active': True,
+            'spotify.no_device': '- - - - -'
         }
         self.init_message()
 

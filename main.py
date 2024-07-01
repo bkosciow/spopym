@@ -41,6 +41,7 @@ def shutdown():
     # menu.shutdown()
     display.shutdown()
     control.shutdown()
+    workflow.shutdown()
 
 
 signal.signal(signal.SIGTERM, shutdown)
