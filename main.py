@@ -8,11 +8,12 @@ from service.workflow import Workflow
 from service.spotify import Spotify
 import signal
 from service.config import Config
+from bluetooth.ble import BLE
 
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 
 logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(asctime)s [%(levelname)s] %(name)s %(message)s'
 )
 logger = logging.getLogger(__name__)
@@ -22,15 +23,21 @@ spotify = Spotify(cfg)
 display = Display(cfg)
 menu = Menu(cfg, display)
 control = Control()
+ble = BLE()
 
-workflow = Workflow(cfg, display, menu, spotify)
+workflow = Workflow(cfg, display, menu, spotify, ble)
 menu.close_event = workflow.control_callback
 control.callback = workflow.control_callback
 spotify.auth_callback = workflow.menu_action
 spotify.menu_callback = workflow.menu_action
+ble.menu_callback = workflow.menu_action
 
 menu.add_menu_item(MenuItem('Spotify', generator=spotify.get_menu))
+
+menu.add_menu_item(MenuItem('BLE', generator=ble.get_menu))
+
 menu.add_menu_item(MenuItem('Shutdown', action_name="sys.shutdown", callback=workflow.menu_action))
+
 
 
 display.clear()

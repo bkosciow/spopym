@@ -4,10 +4,11 @@ from scheduler.task import Task
 
 
 class Workflow:
-    def __init__(self, config, lcd, menu, spotify):
+    def __init__(self, config, lcd, menu, spotify, ble):
         self.config = config
         self.menu = menu
         self.lcd = lcd
+        self.ble = ble
         self.state = 'main'
         self.spotify = spotify
         self.app_works = True
@@ -71,3 +72,5 @@ class Workflow:
                 self.spotify.set_active_device()
             else:
                 self.config.set_param('spotify.use_active', False)
+        if name == 'ble.scan':
+            self.ble.scan()

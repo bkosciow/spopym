@@ -1,5 +1,5 @@
 import time
-from ble_device import Device
+from .ble_device import Device
 import bluepy.btle as btle
 import logging
 logger = logging.getLogger(__name__)
