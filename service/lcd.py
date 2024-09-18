@@ -9,6 +9,7 @@ RPi.GPIO.setmode(RPi.GPIO.BCM)
 
 class Display:
     def __init__(self, config):
+        self.saved_lcd = None
         self.config = config
         drv = SPI()
         self.size = (128, 64)
@@ -25,20 +26,20 @@ class Display:
     def show_main(self):
         ip = check_output(['hostname', '-I']).decode('utf8')
         self.lcd.write(ip.strip(), 0, 0)
-        self.lcd.write("BLE: ", 0, 1)
+        bottom_bar = ""
         if not self.config.get_param("spotify_token"):
             self.lcd.write("Spotify: D/C", 0, 2)
-            self.lcd.write("[ ]", 10, 7)
+            bottom_bar = "[ ]" + bottom_bar
         else:
             self.lcd.write(self.config.get_param('spotify.device')['name'].ljust(self.lcd.width), 0, 6)
             self.lcd.write(str(self.config.get_param('spotify.device')['volume']).ljust(3), 0, 7)
-            self.lcd.write("[S]", 10, 7)
+            bottom_bar = "[S]" + bottom_bar
 
         if self.config.get_param('use_message'):
-            self.lcd.write("[M]", 13, 7)
-        else:
-            self.lcd.write("[ ]", 13, 7)
+            bottom_bar = "[M]" + bottom_bar
 
+        bottom_bar = "[" + str(self.config.get_param('ble_no_devices')) + "]" + bottom_bar
+        self.lcd.write(bottom_bar, 16 - len(bottom_bar), 7)
         self.lcd.flush(True)
 
     def show_authorize(self):
@@ -56,6 +57,24 @@ class Display:
 
     def clear(self):
         for i in range(0, self.lcd.height):
-            self.lcd.write(" "*(self.lcd.width), 0, i)
+            self.lcd.write(" " * self.lcd.width, 0, i)
         self.lcd.flush(True)
 
+    def save_screen(self):
+        self.saved_lcd = self.lcd.buffer.copy()
+
+    def show_popup(self, text):
+        x_offset = (self.lcd.width - len(text)) // 2
+        x_offset -= 2
+        y_offset = 2
+        self.lcd.write("*" * (len(text)+4), x_offset, y_offset)
+        self.lcd.write("* " + (" "*len(text)) + " *", x_offset, y_offset + 1)
+        self.lcd.write("* " + text + " *", x_offset, y_offset + 2)
+        self.lcd.write("* " + (" " * len(text)) + " *", x_offset, y_offset + 3)
+        self.lcd.write("*" * (len(text) + 4), x_offset, y_offset + 4)
+        self.lcd.flush()
+
+    def restore_screen(self):
+        self.lcd.buffer = self.saved_lcd
+        self.lcd.dirty = True
+        self.lcd.flush()

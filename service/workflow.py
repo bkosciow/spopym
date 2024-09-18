@@ -57,8 +57,15 @@ class Workflow:
     def shutdown(self):
         self.executor.stop()
 
-    def menu_action(self, name, params=[]):
+    def menu_action(self, name, params=None):
+        if params is None:
+            params = []
         print("menu_action ", name, params)
+        if name == 'lcd.show_popup':
+            self.lcd.save_screen()
+            self.lcd.show_popup(params['text'])
+        if name == 'lcd.hide_popup':
+            self.lcd.restore_screen()
         if name == 'sys.shutdown':
             self.lcd.shutdown()
             self.app_works = False

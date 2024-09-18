@@ -29,6 +29,9 @@ class DeviceManager:
     def add(self, device):
         self.devices.append(device)
 
+    def count_devices(self):
+        return len(self.devices)
+
     def exists(self, dev):
         for p in self.devices:
             if p.device.addr == dev.addr:

@@ -69,4 +69,3 @@ class Spotify:
                 device['volume'] = 0
             self.config.set_param('spotify.device', device)
             self.spotify.volume(device['volume'], device['id'])
-
