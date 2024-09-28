@@ -1,12 +1,17 @@
 import spotipy
-from spotipy.oauth2 import SpotifyClientCredentials
 from spotipy.oauth2 import SpotifyOAuth
+from service.track_data import TrackData
 from service.menu import MenuItem
+import threading
+import time
 
 
-class Spotify:
-    def __init__(self, config):
+class Spotify(threading.Thread):
+    def __init__(self, config, fetch_tick=2):
+        super().__init__()
+
         self.config = config
+        self.fetch_tick = fetch_tick
         self.spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(
             open_browser=False,
             scope=config.get("spotify.scope"),
@@ -17,6 +22,9 @@ class Spotify:
         self.config.set_param("spotify_token", False if self.spotify.auth_manager.get_cached_token() is None else True)
         self.auth_callback = None
         self.menu_callback = None
+        self.data = TrackData()
+        self.work = True
+
         if self.config.get_param('spotify_token'):
             self.get_devices()
 
@@ -69,3 +77,18 @@ class Spotify:
                 device['volume'] = 0
             self.config.set_param('spotify.device', device)
             self.spotify.volume(device['volume'], device['id'])
+
+    def shutdown(self):
+        self.work = False
+
+    def run(self):
+        while self.work:
+            start = time.time()
+            if self.config.get_param("spotify_token"):
+                playback = self.spotify.current_playback()
+                print("fetch")
+                print(playback)
+                if playback:
+                    self.data.set_data(playback)
+            diff = (time.time() - start)
+            time.sleep(self.fetch_tick - diff)
