@@ -1,11 +1,14 @@
 from queue import Queue
-
+import time
 
 class Device:
     def __init__(self, device, read_buffer_size=20):
         self.device = device
         self.services = {}
         self.characteristics = {}
+        time.sleep(0.5)
+        # print(self.device.getMTU())
+        self.device.setMTU(256)
         self.read_buffer = Queue(read_buffer_size)
 
     def add_service(self, s):

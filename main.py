@@ -33,6 +33,7 @@ control.callback = workflow.control_callback
 spotify.auth_callback = workflow.menu_action
 spotify.menu_callback = workflow.menu_action
 ble.menu_callback = workflow.menu_action
+spotify.add_track_callback(ble.broadcast_to_lcd)
 
 menu.add_menu_item(MenuItem('Spotify', generator=spotify.get_menu))
 menu.add_menu_item(MenuItem('BLE', generator=ble.get_menu))

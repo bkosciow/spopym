@@ -43,6 +43,7 @@ class DeviceManager:
         ok = False
         try:
             handler = btle.Peripheral(_device.addr)
+
             device = Device(handler)
             for service in self.services:
                 try:
@@ -99,5 +100,3 @@ class DeviceManager:
                     logger.error(e)
                     if "Helper not started" in str(e):
                         self.remove(device)
-
-

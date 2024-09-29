@@ -24,9 +24,12 @@ class Spotify(threading.Thread):
         self.menu_callback = None
         self.data = TrackData()
         self.work = True
-
+        self.track_callback = []
         if self.config.get_param('spotify_token'):
             self.get_devices()
+
+    def add_track_callback(self, cb):
+        self.track_callback.append(cb)
 
     def get_menu(self):
         if not self.config.get_param("spotify_token"):
@@ -87,8 +90,9 @@ class Spotify(threading.Thread):
             if self.config.get_param("spotify_token"):
                 playback = self.spotify.current_playback()
                 print("fetch")
-                print(playback)
                 if playback:
                     self.data.set_data(playback)
+                    for cb in self.track_callback:
+                        cb(self.data)
             diff = (time.time() - start)
             time.sleep(self.fetch_tick - diff)
