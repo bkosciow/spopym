@@ -6,9 +6,6 @@ class Device:
         self.device = device
         self.services = {}
         self.characteristics = {}
-        time.sleep(0.5)
-        # print(self.device.getMTU())
-        self.device.setMTU(256)
         self.read_buffer = Queue(read_buffer_size)
 
     def add_service(self, s):

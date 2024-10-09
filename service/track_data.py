@@ -1,4 +1,5 @@
 import pickle
+import unicodedata
 
 
 class TrackData:
@@ -15,18 +16,6 @@ class TrackData:
             'repeat': 6,
             'shuffle': 7,
         }
-
-    def time_to_display(self, data, filler="0"):
-        if data < 0:
-            data = filler * 2
-        elif data < 10:
-            data = filler + str(data)
-        elif data > 99:
-            data = "99"
-        else:
-            data = str(data)
-
-        return data
 
     def empty_data(self):
         result = {
@@ -47,8 +36,8 @@ class TrackData:
         total = data['item']['duration_ms'] / 1000
 
         result = {
-            'title': data['item']['name'],
-            'artist': data['item']['artists'][0]['name'],
+            'title': (unicodedata.normalize('NFKD', data['item']['name']).encode('ASCII', 'ignore')).decode('utf8'),
+            'artist': (unicodedata.normalize('NFKD', data['item']['artists'][0]['name']).encode('ASCII', 'ignore')).decode('utf8'),
             'length': total,
             'progress': progress,
             'volume': data['device']['volume_percent'],
