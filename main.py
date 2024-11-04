@@ -28,8 +28,8 @@ ble = BLE(cfg)
 ble.lcd = display
 
 workflow = Workflow(cfg, display, menu, spotify, ble)
-menu.close_event = workflow.control_callback
-control.callback = workflow.control_callback
+menu.close_event = workflow.menu_action
+control.callback = workflow.menu_action
 spotify.auth_callback = workflow.menu_action
 spotify.menu_callback = workflow.menu_action
 ble.menu_callback = workflow.menu_action
@@ -57,7 +57,13 @@ signal.signal(signal.SIGTERM, shutdown)
 
 try:
     while workflow.app_works:
+        reads = ble.get_data()
+        print(reads)
+        for uuid in reads:
+            if reads[uuid] is not None:
+                workflow.menu_action(reads[uuid], {'source': uuid})
         time.sleep(1)
+
 except KeyboardInterrupt:
     shutdown()
 

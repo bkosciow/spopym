@@ -58,8 +58,9 @@ class Spotify(threading.Thread):
             devices = self.get_devices()
             for device in devices:
                 if device['is_active']:
+                    print(device)
                     found = True
-                    self.config.set_param('spotify.device', {'id': None, 'name': device['name'], 'volume': device['volume_percent']})
+                    self.config.set_param('spotify.device', {'id': device['id'], 'name': device['name'], 'volume': device['volume_percent']})
             if not found:
                 self.config.set_param('spotify.device', {'id': None, 'name': self.config.get_param('spotify.no_device'), 'volume': 0})
 
@@ -81,6 +82,29 @@ class Spotify(threading.Thread):
             self.config.set_param('spotify.device', device)
             self.spotify.volume(device['volume'], device['id'])
 
+    def next_track(self):
+        device = self.config.get_param('spotify.device')
+        if device['id']:
+            print("nex device:", device)
+            self.spotify.next_track()
+
+    def prev_track(self):
+        device = self.config.get_param('spotify.device')
+        if device['id']:
+            print("prev device:", device)
+            self.spotify.previous_track()
+
+    def start_play(self):
+        device = self.config.get_param('spotify.device')
+        if device['id'] and not self.data.is_playing():
+            print("play device:", device )
+            print(self.spotify.start_playback(device_id=device['id']))
+
+    def pause_play(self):
+        device = self.config.get_param('spotify.device')
+        if device['id']:
+            self.spotify.pause_playback()
+
     def shutdown(self):
         self.work = False
 
@@ -89,10 +113,12 @@ class Spotify(threading.Thread):
             start = time.time()
             if self.config.get_param("spotify_token"):
                 playback = self.spotify.current_playback()
-                print("fetch")
                 if playback:
                     self.data.set_data(playback)
                     for cb in self.track_callback:
+                        print("IN")
                         cb(self.data)
+                        print("OUT")
             diff = (time.time() - start)
-            time.sleep(self.fetch_tick - diff)
+            if self.fetch_tick - diff > 0:
+                time.sleep(self.fetch_tick - diff)

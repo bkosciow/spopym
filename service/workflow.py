@@ -23,33 +23,6 @@ class Workflow:
         self.executor.every_seconds(2, lcd_task, False)
         self.executor.start()
 
-    def control_callback(self, action):
-        print("control_callback ", action)
-        if action == 'encoder_click':
-            if self.state == 'main':
-                self.state = 'menu'
-                self.menu.start()
-            elif self.state == 'menu':
-                self.menu.activate()
-
-        if action == 'encoder_inc':
-            if self.state == 'menu':
-                self.menu.move_up()
-            if self.state == "main":
-                self.spotify.increase_volume()
-
-        if action == 'encoder_dec':
-            if self.state == 'menu':
-                self.menu.move_down()
-            if self.state == "main":
-                self.spotify.decrease_volume()
-
-        if action == 'close_menu' or action == 'GPIO16':
-            if self.state == 'menu':
-                self.state = 'main'
-                self.lcd.clear()
-                self.lcd.show_main()
-
     def refresh_lcd(self):
         if self.state == 'main':
             self.lcd.show_main()
@@ -61,17 +34,46 @@ class Workflow:
         if params is None:
             params = []
         print("menu_action ", name, params)
+        if name == 'encoder_click':
+            if self.state == 'main':
+                self.state = 'menu'
+                self.menu.start()
+            elif self.state == 'menu':
+                self.menu.activate()
+
+        if name == 'encoder_inc':
+            if self.state == 'menu':
+                self.menu.move_up()
+            if self.state == "main":
+                self.spotify.increase_volume()
+
+        if name == 'encoder_dec':
+            if self.state == 'menu':
+                self.menu.move_down()
+            if self.state == "main":
+                self.spotify.decrease_volume()
+
+        if name == 'close_menu' or name == 'GPIO16':
+            if self.state == 'menu':
+                self.state = 'main'
+                self.lcd.clear()
+                self.lcd.show_main()
+
         if name == 'lcd.show_popup':
             self.lcd.save_screen()
             self.lcd.show_popup(params['text'])
+
         if name == 'lcd.hide_popup':
             self.lcd.restore_screen()
+
         if name == 'sys.shutdown':
             self.lcd.shutdown()
             self.app_works = False
             # os.system("sudo shutdown -h now")
+
         if name == 'spotify.connect':
             self.lcd.show_authorize()
+
         if name == 'spotify.device':
             self.config.set_param('spotify.device', params)
             if params['id'] is None:
@@ -79,5 +81,18 @@ class Workflow:
                 self.spotify.set_active_device()
             else:
                 self.config.set_param('spotify.use_active', False)
-        if name == 'ble.scan':
+
+        if name == 'ble.scan' or (self.state == 'main' and name == 'GPIO5'):
             self.ble.scan()
+
+        if name == 'next':
+            self.spotify.next_track()
+
+        if name == 'prev':
+            self.spotify.prev_track()
+
+        if name == 'play' or (self.state == 'main' and name == 'GPIO25'):
+            self.spotify.start_play()
+
+        if name == 'stop':
+            self.spotify.pause_play()

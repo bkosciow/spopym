@@ -52,7 +52,7 @@ class TrackData:
         return self.k2i[key]
 
     def is_playing(self):
-        return self.data['playing']
+        return self.data['is_playing']
 
     def get_data(self):
         if not self.data:
