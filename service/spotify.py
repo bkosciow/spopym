@@ -4,6 +4,9 @@ from service.track_data import TrackData
 from service.menu import MenuItem
 import threading
 import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class Spotify(threading.Thread):
@@ -41,7 +44,7 @@ class Spotify(threading.Thread):
             menu.add(MenuItem('default', action_name="spotify.device", callback=self.menu_callback, params={'id': None, 'name': 'default', 'volume_percent': 50}))
             devices = self.get_devices()
             for device in devices:
-                print(device)
+                logging.debug(device)
                 menu.add(
                     MenuItem(device['name'], action_name="spotify.device", callback=self.menu_callback, params={'id': device['id'], 'name': device['name'], 'volume': device['volume_percent']})
                 )
@@ -97,7 +100,7 @@ class Spotify(threading.Thread):
     def start_play(self):
         device = self.config.get_param('spotify.device')
         if device['id'] and not self.data.is_playing():
-            print("play device:", device )
+            print("play device:", device)
             print(self.spotify.start_playback(device_id=device['id']))
 
     def pause_play(self):
@@ -116,9 +119,7 @@ class Spotify(threading.Thread):
                 if playback:
                     self.data.set_data(playback)
                     for cb in self.track_callback:
-                        print("IN")
                         cb(self.data)
-                        print("OUT")
             diff = (time.time() - start)
             if self.fetch_tick - diff > 0:
                 time.sleep(self.fetch_tick - diff)

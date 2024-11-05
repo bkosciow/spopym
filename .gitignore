@@ -18,3 +18,4 @@ __pycache__/
 .tox
 config.ini
 .cache
+app_storage.db

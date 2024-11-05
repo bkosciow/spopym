@@ -9,11 +9,14 @@ SERVICES = {
     DEVICE: [DEVICE_BUTTONS, DEVICE_LCD],
 }
 
+KEY_LAST_DEVICES = 'last_ble_devices'
+
 
 class BLE:
-    def __init__(self, config):
+    def __init__(self, config, storage):
         self.menu_callback = None
         self.config = config
+        self.storage = storage
         self.config.set_param('ble_no_devices', 0)
         self.device_manager = DeviceManager()
         for service in SERVICES:
@@ -45,11 +48,23 @@ class BLE:
     def scan(self):
         self.comms_on = False
         self.menu_callback("lcd.show_popup", {"text": "Scanning"})
-        self.scaner.scan()
+        addresses = self.scaner.scan()
+        self.storage.set(KEY_LAST_DEVICES, addresses)
         self.config.set_param('ble_no_devices', self.device_manager.count_devices())
         self.menu_callback("lcd.hide_popup")
         self.cache = {}
         self.comms_on = True
+
+    def quick_scan(self):
+        last_devices = self.storage.get(KEY_LAST_DEVICES)
+        if last_devices is not None:
+            self.comms_on = False
+            self.menu_callback("lcd.show_popup", {"text": "Reconnect"})
+            self.scaner.scan(last_devices)
+            self.config.set_param('ble_no_devices', self.device_manager.count_devices())
+            self.menu_callback("lcd.hide_popup")
+            self.cache = {}
+            self.comms_on = True
 
     def broadcast_to_lcd(self, track_data):
         if not self.comms_on:
@@ -63,7 +78,6 @@ class BLE:
                 data_chunk = packet_data[0:self.mtu]
                 while data_chunk:
                     message = str(track_data.get_code_for_key(k)) + str(pos) + data_chunk
-                    print(pos, message)
                     self.get_lock()
                     self.device_manager.write_to_characteristic(DEVICE_LCD, bytes(message, "utf-8"))
                     self.release_lock()

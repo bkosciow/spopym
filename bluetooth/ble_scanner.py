@@ -34,13 +34,18 @@ class Scanner(threading.Thread):
 
         return devices
 
-    def scan(self):
+    def scan(self, pool=None):
+        added_devices = []
         logging.debug("executing scan")
         devices = self._scan()
         for dev in devices:
             logging.debug("found %s (%s), RSSI=%d dB" % (dev.addr, dev.addrType, dev.rssi))
-            if not self.device_manager.exists(dev) and self.device_manager.add_if_supported(dev):
-                logging.debug('Adding device %s to manager: ', dev.addr)
+            if pool is None or dev.addr in pool:
+                if not self.device_manager.exists(dev) and self.device_manager.add_if_supported(dev):
+                    added_devices.append(dev.addr)
+                    logging.debug('Adding device %s to manager: ', dev.addr)
+
+        return added_devices
 
     def run(self):
         while self.work:

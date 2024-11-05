@@ -10,6 +10,9 @@ import signal
 from service.config import Config
 from bluetooth.ble import BLE
 
+from micro_storage.storage import Storage
+from micro_storage.sqlite_engine import SQLiteEngine
+
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 
 logging.basicConfig(
@@ -18,12 +21,15 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+Storage.set_engine(SQLiteEngine())
+storage = Storage()
+
 cfg = Config()
 spotify = Spotify(cfg)
 display = Display(cfg)
 menu = Menu(cfg, display)
 control = Control()
-ble = BLE(cfg)
+ble = BLE(cfg, storage)
 
 ble.lcd = display
 
@@ -44,6 +50,7 @@ display.show_main()
 
 spotify.start()
 
+ble.quick_scan()
 
 def shutdown():
     # menu.shutdown()
@@ -58,7 +65,6 @@ signal.signal(signal.SIGTERM, shutdown)
 try:
     while workflow.app_works:
         reads = ble.get_data()
-        print(reads)
         for uuid in reads:
             if reads[uuid] is not None:
                 workflow.menu_action(reads[uuid], {'source': uuid})

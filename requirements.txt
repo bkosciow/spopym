@@ -1,0 +1,21 @@
+async-timeout==4.0.3
+bluepy==1.3.0
+certifi==2024.6.2
+charlcd==0.7.1
+charset-normalizer==3.3.2
+colorzero==2.0
+gfxlcd==0.8.3
+gpiozero==2.0.1
+idna==3.7
+iot-message==1.2.1
+lgpio==0.2.2.0
+micro_storage @ git+https://github.com/bkosciow/micro_storage.git@71449df02a53749d728b0b39cc6531387e7b8128
+pillow==10.3.0
+pycryptodome==3.20.0
+redis==5.0.6
+requests==2.32.3
+rpi-lgpio==0.6
+schedule==1.2.2
+spidev==3.6
+spotipy==2.24.0
+urllib3==2.2.2
