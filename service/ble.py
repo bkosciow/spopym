@@ -21,9 +21,6 @@ class BLE:
         self.ble_helper = BLEHelper()
         for service in SERVICES:
             self.ble_helper.support_service(service, SERVICES[service])
-            # self.device_manager.add_alias(DEVICE_LCD, "lcd")
-            # self.device_manager.add_alias(DEVICE_BUTTONS, "button")
-            # self.device_manager.add_alias(DEVICE, "player")
 
         self.lcd = None
         self.cache = {}
