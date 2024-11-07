@@ -69,7 +69,7 @@ class Menu:
         for item in menu_item.options:
             appendix = self.markers['dir'] if item.is_dir() else self.markers['not_dir']
             is_selected = self.markers['selected'] if idx == self.position else self.markers['not_selected']
-            print(is_selected + item.label + appendix)
+            # print(is_selected + item.label + appendix)
             self.lcd.write(is_selected + item.label + appendix, 0, idx + self.top_offset)
             idx += 1
 

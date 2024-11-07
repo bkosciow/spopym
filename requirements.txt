@@ -9,6 +9,7 @@ gpiozero==2.0.1
 idna==3.7
 iot-message==1.2.1
 lgpio==0.2.2.0
+micro_ble @ git+https://github.com/bkosciow/micro_ble@80814649d34fdeb03327642e73627f5a5e5506ad
 micro_storage @ git+https://github.com/bkosciow/micro_storage.git@71449df02a53749d728b0b39cc6531387e7b8128
 pillow==10.3.0
 pycryptodome==3.20.0

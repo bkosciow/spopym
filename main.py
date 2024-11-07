@@ -1,4 +1,3 @@
-from bluetooth.ble_scanner import *
 from service.menu import Menu, MenuItem
 import logging
 import RPi.GPIO
@@ -8,8 +7,8 @@ from service.workflow import Workflow
 from service.spotify import Spotify
 import signal
 from service.config import Config
-from bluetooth.ble import BLE
-
+from service.ble import BLE
+import time
 from micro_storage.storage import Storage
 from micro_storage.sqlite_engine import SQLiteEngine
 

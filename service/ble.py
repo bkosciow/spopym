@@ -1,6 +1,6 @@
-from bluetooth.ble_scanner import *
-from bluetooth.ble_device_manager import DeviceManager
+from micro_ble.ble_helper import BLEHelper
 from service.menu import MenuItem
+
 
 DEVICE = '66b2c551-50df-4188-a436-d6858835fbe0'
 DEVICE_LCD = '66b2c551-50df-4188-a436-d6858835fbe2'
@@ -18,27 +18,16 @@ class BLE:
         self.config = config
         self.storage = storage
         self.config.set_param('ble_no_devices', 0)
-        self.device_manager = DeviceManager()
+        self.ble_helper = BLEHelper()
         for service in SERVICES:
-            self.device_manager.support_service(service, SERVICES[service])
-            self.device_manager.add_alias(DEVICE_LCD, "lcd")
-            self.device_manager.add_alias(DEVICE_BUTTONS, "button")
-            self.device_manager.add_alias(DEVICE, "player")
+            self.ble_helper.support_service(service, SERVICES[service])
+            # self.device_manager.add_alias(DEVICE_LCD, "lcd")
+            # self.device_manager.add_alias(DEVICE_BUTTONS, "button")
+            # self.device_manager.add_alias(DEVICE, "player")
 
-        self.scaner = Scanner(self.device_manager, _sleep=10)
         self.lcd = None
         self.cache = {}
         self.mtu = 18
-        self.comms_on = True
-        self.lock = False
-
-    def get_lock(self):
-        while self.lock:
-            time.sleep(0.01)
-        self.lock = True
-
-    def release_lock(self):
-        self.lock = False
 
     def get_menu(self):
         menu = MenuItem('Scan',  action_name='ble.scan', callback=self.menu_callback)
@@ -46,28 +35,24 @@ class BLE:
         return [menu]
 
     def scan(self):
-        self.comms_on = False
         self.menu_callback("lcd.show_popup", {"text": "Scanning"})
-        addresses = self.scaner.scan()
+        addresses = self.ble_helper.scan()
         self.storage.set(KEY_LAST_DEVICES, addresses)
-        self.config.set_param('ble_no_devices', self.device_manager.count_devices())
+        self.config.set_param('ble_no_devices', self.ble_helper.count_devices())
         self.menu_callback("lcd.hide_popup")
         self.cache = {}
-        self.comms_on = True
 
     def quick_scan(self):
         last_devices = self.storage.get(KEY_LAST_DEVICES)
         if last_devices is not None:
-            self.comms_on = False
             self.menu_callback("lcd.show_popup", {"text": "Reconnect"})
-            self.scaner.scan(last_devices)
-            self.config.set_param('ble_no_devices', self.device_manager.count_devices())
+            self.ble_helper.scan(last_devices)
+            self.config.set_param('ble_no_devices', self.ble_helper.count_devices())
             self.menu_callback("lcd.hide_popup")
             self.cache = {}
-            self.comms_on = True
 
     def broadcast_to_lcd(self, track_data):
-        if not self.comms_on:
+        if not self.ble_helper.enabled:
             return
         data = track_data.get_data()
         for k, v in data.items():
@@ -78,21 +63,9 @@ class BLE:
                 data_chunk = packet_data[0:self.mtu]
                 while data_chunk:
                     message = str(track_data.get_code_for_key(k)) + str(pos) + data_chunk
-                    self.get_lock()
-                    self.device_manager.write_to_characteristic(DEVICE_LCD, bytes(message, "utf-8"))
-                    self.release_lock()
+                    self.ble_helper.broadcast(DEVICE_LCD, message)
                     pos += 1
                     data_chunk = str(v)[pos*self.mtu:(pos+1)*self.mtu]
 
     def get_data(self):
-        if not self.comms_on:
-            return {}
-
-        try:
-            self.get_lock()
-            reads = self.device_manager.get_notifications(0.100)
-            self.release_lock()
-        except Exception as e:
-            reads = {}
-
-        return reads
+        return self.ble_helper.get_data()
