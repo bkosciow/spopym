@@ -15,7 +15,8 @@ class Config(object):
             'spotify.device': {'id': None, 'name': '- - - - -', 'volume': 0},
             'spotify.volume.step': 5,
             'spotify.use_active': True,
-            'spotify.no_device': '- - - - -'
+            'spotify.no_device': '- - - - -',
+            'spotify.last_device': {'id': None, 'name': '- - - - -', 'volume': 0},
         }
         self.init_message()
 

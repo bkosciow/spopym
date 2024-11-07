@@ -61,52 +61,60 @@ class Spotify(threading.Thread):
             devices = self.get_devices()
             for device in devices:
                 if device['is_active']:
-                    print(device)
                     found = True
                     self.config.set_param('spotify.device', {'id': device['id'], 'name': device['name'], 'volume': device['volume_percent']})
+                    self.config.set_param('spotify.last_device', {'id': device['id'], 'name': device['name'], 'volume': device['volume_percent']})
             if not found:
                 self.config.set_param('spotify.device', {'id': None, 'name': self.config.get_param('spotify.no_device'), 'volume': 0})
 
     def increase_volume(self):
         device = self.config.get_param('spotify.device')
-        if device['name'] != self.config.get_param('spotify.no_device'):
+        if device['id']:
             device['volume'] += self.config.get_param('spotify.volume.step')
             if device['volume'] > 100:
                 device['volume'] = 100
-            self.config.set_param('spotify.device', device)
-            self.spotify.volume(device['volume'], device['id'])
+            self._safe_call(self.spotify.volume, {"volume_percent": device['volume'], "device_id": device['id']})
 
     def decrease_volume(self):
         device = self.config.get_param('spotify.device')
-        if device['name'] != self.config.get_param('spotify.no_device'):
+        if device['id']:
             device['volume'] -= self.config.get_param('spotify.volume.step')
             if device['volume'] < 0:
                 device['volume'] = 0
-            self.config.set_param('spotify.device', device)
             self.spotify.volume(device['volume'], device['id'])
+            self._safe_call(self.spotify.volume, {"volume_percent": device['volume'], "device_id": device['id']})
 
     def next_track(self):
         device = self.config.get_param('spotify.device')
         if device['id']:
-            print("nex device:", device)
-            self.spotify.next_track()
+            self._safe_call(self.spotify.next_track, {"device_id": device['id']})
 
     def prev_track(self):
         device = self.config.get_param('spotify.device')
         if device['id']:
-            print("prev device:", device)
-            self.spotify.previous_track()
+            self._safe_call(self.spotify.previous_track, {"device_id": device['id']})
 
     def start_play(self):
-        device = self.config.get_param('spotify.device')
+        device = self.config.get_param('spotify.last_device')
         if device['id'] and not self.data.is_playing():
-            print("play device:", device)
-            print(self.spotify.start_playback(device_id=device['id']))
+            self._safe_call(self.spotify.start_playback, {"device_id": device['id']})
 
     def pause_play(self):
         device = self.config.get_param('spotify.device')
-        if device['id']:
-            self.spotify.pause_playback()
+        if device['id'] and self.data.is_playing():
+            self._safe_call(self.spotify.pause_playback, {"device_id": device['id']})
+
+    def _safe_call(self, f, p=None):
+        try:
+            f(**p)
+        except spotipy.exceptions.SpotifyException as e:
+            logger.info(e.msg)
+            if e.reason == 'NO_ACTIVE_DEVICE':
+                logger.debug('No active device')
+            if e.reason == 'UNKNOWN':
+                logger.debug('Duplicated call?')
+            if e.reason == 'NONE' and e.code == 404:
+                logger.debug('no device')
 
     def shutdown(self):
         self.work = False
