@@ -31,8 +31,10 @@ class Display:
             self.lcd.write("Spotify: D/C", 0, 2)
             bottom_bar = "[ ]" + bottom_bar
         else:
-            self.lcd.write(self.config.get_param('spotify.device')['name'].ljust(self.lcd.width), 0, 6)
-            self.lcd.write(str(self.config.get_param('spotify.device')['volume']).ljust(3), 0, 7)
+            device_name = self.config.get_param('spotify.device')['name'] if self.config.get_param('spotify.device') else '----'
+            volume = self.config.get_param('spotify.device')['volume_percent'] if self.config.get_param('spotify.device') else '--'
+            self.lcd.write(device_name.ljust(self.lcd.width), 0, 6)
+            self.lcd.write(str(volume).ljust(3), 0, 7)
             bottom_bar = "[S]" + bottom_bar
 
         if self.config.get_param('use_message'):

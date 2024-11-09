@@ -5,4 +5,4 @@ class Task(object):
         self.func = func
 
     def execute(self):
-        result = self.func()
+        return self.func()

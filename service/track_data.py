@@ -33,11 +33,18 @@ class TrackData:
 
     def format_data(self, data):
         progress = data['progress_ms'] / 1000
-        total = data['item']['duration_ms'] / 1000
+        if 'item' in data and data['item'] is not None:
+            total = data['item']['duration_ms'] / 1000
+            title = (unicodedata.normalize('NFKD', data['item']['name']).encode('ASCII', 'ignore')).decode('utf8')
+            artist = (unicodedata.normalize('NFKD', data['item']['artists'][0]['name']).encode('ASCII', 'ignore')).decode('utf8')
+        else:
+            total = 0
+            title = ""
+            artist = ""
 
         result = {
-            'title': (unicodedata.normalize('NFKD', data['item']['name']).encode('ASCII', 'ignore')).decode('utf8'),
-            'artist': (unicodedata.normalize('NFKD', data['item']['artists'][0]['name']).encode('ASCII', 'ignore')).decode('utf8'),
+            'title': title,
+            'artist': artist,
             'length': total,
             'progress': progress,
             'volume': data['device']['volume_percent'],

@@ -16,9 +16,6 @@ class Workflow:
         self.init_tasks()
 
     def init_tasks(self):
-        spotify_default_device = Task('spotify_default_device', self.spotify.set_active_device)
-        self.executor.every_seconds(3, spotify_default_device, False)
-
         lcd_task = Task('lcd_refresh', self.refresh_lcd)
         self.executor.every_seconds(2, lcd_task, False)
         self.executor.start()
@@ -75,12 +72,10 @@ class Workflow:
             self.lcd.show_authorize()
 
         if name == 'spotify.device':
-            self.config.set_param('spotify.device', params)
-            if params['id'] is None:
-                self.config.set_param('spotify.use_active', True)
-                self.spotify.set_active_device()
+            if params['device'] is None:
+                self.spotify.set_device(None)
             else:
-                self.config.set_param('spotify.use_active', False)
+                self.spotify.set_device(params['device'])
 
         if name == 'ble.scan' or (self.state == 'main' and name == 'GPIO5'):
             self.ble.scan()
