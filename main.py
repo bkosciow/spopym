@@ -1,7 +1,7 @@
 from service.menu import Menu, MenuItem
 import logging
 import RPi.GPIO
-from service.lcd import Display
+from service.display import Display
 from service.control import Control
 from service.workflow import Workflow
 from service.spotify import Spotify
@@ -44,10 +44,12 @@ menu.add_menu_item(MenuItem('Spotify', generator=spotify.get_menu))
 menu.add_menu_item(MenuItem('BLE', generator=ble.get_menu))
 menu.add_menu_item(MenuItem('Shutdown', action_name="sys.shutdown", callback=workflow.menu_action))
 
+
 display.clear()
 display.show_main()
 
 spotify.start()
+display.start()
 
 ble.quick_scan()
 

@@ -4,11 +4,15 @@ from gfxlcd.driver.ssd1306.ssd1306 import SSD1306
 from charlcd.buffered import CharLCD
 from gfxlcd.driver.hd44780 import HD44780
 from subprocess import check_output
+import threading
+import time
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 
 
-class Display:
-    def __init__(self, config):
+class Display(threading.Thread):
+    def __init__(self, config, refresh_tick=0.2):
+        super().__init__()
+        self.refresh_tick = refresh_tick
         self.saved_lcd = None
         self.config = config
         drv = SPI()
@@ -20,8 +24,11 @@ class Display:
         self.lcd = CharLCD(drv.width, drv.height, drv, 0, 0)
         self.lcd.init()
 
-    def __getattr__(self, attr):
-        return getattr(self.lcd, attr)
+        self.menu_top_offset = 1
+        self.work = True
+
+    # def __getattr__(self, attr):
+    #     return getattr(self.lcd, attr)
 
     def show_main(self):
         ip = check_output(['hostname', '-I']).decode('utf8')
@@ -42,7 +49,6 @@ class Display:
 
         bottom_bar = "[" + str(self.config.get_param('ble_no_devices')) + "]" + bottom_bar
         self.lcd.write(bottom_bar, 16 - len(bottom_bar), 7)
-        self.lcd.flush(True)
 
     def show_authorize(self):
         self.lcd.write("Go to terminal", 0, 1)
@@ -50,17 +56,15 @@ class Display:
         self.lcd.write("auth.py", 2, 4)
 
         self.lcd.write("Then restart app", 0, 6)
-        self.lcd.flush(True)
 
     def shutdown(self):
+        self.work = False
         self.clear()
         self.lcd.write("Goodbye", 4, 4)
-        self.lcd.flush(True)
 
     def clear(self):
         for i in range(0, self.lcd.height):
             self.lcd.write(" " * self.lcd.width, 0, i)
-        self.lcd.flush(True)
 
     def save_screen(self):
         self.saved_lcd = self.lcd.buffer.copy()
@@ -74,9 +78,28 @@ class Display:
         self.lcd.write("* " + text + " *", x_offset, y_offset + 2)
         self.lcd.write("* " + (" " * len(text)) + " *", x_offset, y_offset + 3)
         self.lcd.write("*" * (len(text) + 4), x_offset, y_offset + 4)
-        self.lcd.flush()
+
+    def show_menu(self, menu, clear, selected_position):
+        if clear:
+            self.clear()
+        idx = 0
+        for item in menu:
+            self.lcd.write(item, 0, idx + self.menu_top_offset)
+            idx += 1
 
     def restore_screen(self):
         self.lcd.buffer = self.saved_lcd
         self.lcd.dirty = True
-        self.lcd.flush()
+
+    def refresh_lcd(self):
+        if self.config.get_param('state') == 'main':
+            self.show_main()
+
+    def run(self):
+        while self.work:
+            start = time.time()
+            self.refresh_lcd()
+            self.lcd.flush(True)
+            diff = (time.time() - start)
+            if self.refresh_tick - diff > 0:
+                time.sleep(self.refresh_tick - diff)

@@ -9,50 +9,45 @@ class Workflow:
         self.menu = menu
         self.lcd = lcd
         self.ble = ble
-        self.state = 'main'
+        self.set_state('main')
         self.spotify = spotify
         self.app_works = True
-        self.executor = Executor()
-        self.init_tasks()
 
-    def init_tasks(self):
-        lcd_task = Task('lcd_refresh', self.refresh_lcd)
-        self.executor.every_seconds(2, lcd_task, False)
-        self.executor.start()
+    def get_state(self):
+        return self.config.get_param('state')
 
-    def refresh_lcd(self):
-        if self.state == 'main':
-            self.lcd.show_main()
+    def set_state(self, state):
+        self.config.set_param('state', state)
 
     def shutdown(self):
-        self.executor.stop()
+        pass
 
     def menu_action(self, name, params=None):
         if params is None:
             params = []
         print("menu_action ", name, params)
         if name == 'encoder_click':
-            if self.state == 'main':
-                self.state = 'menu'
+            if self.get_state() == 'main':
+                self.set_state('menu')
                 self.menu.start()
-            elif self.state == 'menu':
+            elif self.get_state() == 'menu':
                 self.menu.activate()
 
         if name == 'encoder_inc':
-            if self.state == 'menu':
+            if self.get_state() == 'menu':
                 self.menu.move_up()
-            if self.state == "main":
+            if self.get_state() == "main":
                 self.spotify.increase_volume()
 
         if name == 'encoder_dec':
-            if self.state == 'menu':
+            if self.get_state() == 'menu':
                 self.menu.move_down()
-            if self.state == "main":
+            if self.get_state() == "main":
                 self.spotify.decrease_volume()
 
         if name == 'close_menu' or name == 'GPIO16':
-            if self.state == 'menu':
-                self.state = 'main'
+            if self.get_state() == 'menu':
+                self.set_state('main')
                 self.lcd.clear()
                 self.lcd.show_main()
 
@@ -77,7 +72,7 @@ class Workflow:
             else:
                 self.spotify.set_device(params['device'])
 
-        if name == 'ble.scan' or (self.state == 'main' and name == 'GPIO5'):
+        if name == 'ble.scan' or (self.get_state() == 'main' and name == 'GPIO5'):
             self.ble.scan()
 
         if name == 'next':
@@ -86,7 +81,7 @@ class Workflow:
         if name == 'prev':
             self.spotify.prev_track()
 
-        if name == 'play' or (self.state == 'main' and name == 'GPIO25'):
+        if name == 'play' or (self.get_state() == 'main' and name == 'GPIO25'):
             self.spotify.start_play()
 
         if name == 'stop':

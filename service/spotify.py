@@ -5,6 +5,7 @@ from service.menu import MenuItem
 import threading
 import time
 import logging
+import requests
 
 logger = logging.getLogger(__name__)
 
@@ -152,12 +153,17 @@ class Spotify(threading.Thread):
         while self.work:
             start = time.time()
             if self.config.get_param("spotify_token"):
-                self.refresh_device_status()
-                playback = self.spotify.current_playback()
-                if playback:
-                    self.data.set_data(playback)
-                    for cb in self.track_callback:
-                        cb(self.data)
+                try:
+                    self.refresh_device_status()
+                    playback = self.spotify.current_playback()
+                    if playback:
+                        self.data.set_data(playback)
+                        for cb in self.track_callback:
+                            cb(self.data)
+                except requests.exceptions.ReadTimeout as e:
+                    logger.info("API timeout")
+                    pass
+
             diff = (time.time() - start)
             if self.fetch_tick - diff > 0:
                 time.sleep(self.fetch_tick - diff)

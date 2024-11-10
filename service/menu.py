@@ -30,7 +30,6 @@ class Menu:
         }
         self.level = None
         self.position = 0
-        self.top_offset = 1
         self.close_event = None
 
     def add_menu_item(self, menu, parent=None):
@@ -63,17 +62,16 @@ class Menu:
 
         return current
 
-    def draw(self):
+    def draw(self, clear=False):
         idx = 0
         menu_item = self._get_current_menu_item()
+        menu = []
         for item in menu_item.options:
             appendix = self.markers['dir'] if item.is_dir() else self.markers['not_dir']
             is_selected = self.markers['selected'] if idx == self.position else self.markers['not_selected']
-            # print(is_selected + item.label + appendix)
-            self.lcd.write(is_selected + item.label + appendix, 0, idx + self.top_offset)
+            menu.append(is_selected + item.label + appendix)
             idx += 1
-
-        self.lcd.flush()
+        self.lcd.show_menu(menu, clear, self.position)
 
     def move_up(self):
         current = self._get_current_menu_item()
@@ -103,8 +101,7 @@ class Menu:
         if current.options is not None:
             self.level.append(self.position)
             self.position = 0
-            self.lcd.clear()
-            self.draw()
+            self.draw(True)
 
     def back(self, action, params=[]):
         if len(self.level) == 0:
@@ -112,6 +109,5 @@ class Menu:
         else:
             self.level.pop()
             self.position = 0
-            self.lcd.clear()
-            self.draw()
+            self.draw(True)
 
