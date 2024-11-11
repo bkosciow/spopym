@@ -22,7 +22,6 @@ class BLE:
         for service in SERVICES:
             self.ble_helper.support_service(service, SERVICES[service])
 
-        self.lcd = None
         self.cache = {}
         self.mtu = 18
 

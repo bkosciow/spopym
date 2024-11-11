@@ -107,6 +107,7 @@ class Spotify(threading.Thread):
     def start_play(self):
         device = self.config.get_param('spotify.last_device')
         if device is None:
+            self.menu_callback('lcd.show_popup', {"text": 'No Device', 'close_delay': 3})
             return
         if not device['is_active']:
             self.transfer_playback(device)
@@ -131,10 +132,12 @@ class Spotify(threading.Thread):
             logger.info(e.code)
             if e.reason == 'NO_ACTIVE_DEVICE':
                 logger.debug('No active device')
+                self.menu_callback('lcd.show_popup', {"text": 'No Device', 'close_delay': 3})
             if e.reason == 'UNKNOWN':
                 logger.debug('Duplicated call?')
             if e.reason == 'NONE' and e.code == 404:
                 logger.debug('no device')
+                self.menu_callback('lcd.show_popup', {"text": 'No Device', 'close_delay': 3})
             if e.code == 403 and 'Player command failed: Restriction violated' in e.msg:
                 self.transfer_playback(self.config.get_param('spotify.device'))
                 self._safe_call(f, p)

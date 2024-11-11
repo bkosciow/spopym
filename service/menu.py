@@ -17,10 +17,10 @@ class MenuItem:
 
 
 class Menu:
-    def __init__(self, config, lcd):
+    def __init__(self, config, display):
         self.config = config
         self.menu = MenuItem("root", options=[])
-        self.lcd = lcd
+        self.display = display
         self.markers = {
             'not_selected': "  ",
             'selected': "> ",
@@ -38,7 +38,7 @@ class Menu:
     def start(self):
         self.level = []
         self.position = 0
-        self.lcd.clear()
+        self.display.clear()
         self.draw()
 
     def _get_current_menu_item(self):
@@ -71,7 +71,7 @@ class Menu:
             is_selected = self.markers['selected'] if idx == self.position else self.markers['not_selected']
             menu.append(is_selected + item.label + appendix)
             idx += 1
-        self.lcd.show_menu(menu, clear, self.position)
+        self.display.show_menu(menu, clear, self.position)
 
     def move_up(self):
         current = self._get_current_menu_item()

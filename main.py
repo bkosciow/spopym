@@ -29,10 +29,8 @@ display = Display(cfg)
 menu = Menu(cfg, display)
 control = Control()
 ble = BLE(cfg, storage)
-
-ble.lcd = display
-
 workflow = Workflow(cfg, display, menu, spotify, ble)
+
 menu.close_event = workflow.menu_action
 control.callback = workflow.menu_action
 spotify.auth_callback = workflow.menu_action

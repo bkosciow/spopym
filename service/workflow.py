@@ -4,10 +4,10 @@ from scheduler.task import Task
 
 
 class Workflow:
-    def __init__(self, config, lcd, menu, spotify, ble):
+    def __init__(self, config, display, menu, spotify, ble):
         self.config = config
         self.menu = menu
-        self.lcd = lcd
+        self.display = display
         self.ble = ble
         self.set_state('main')
         self.spotify = spotify
@@ -20,7 +20,7 @@ class Workflow:
         self.config.set_param('state', state)
 
     def shutdown(self):
-        pass
+        self.app_works = False
 
     def menu_action(self, name, params=None):
         if params is None:
@@ -48,23 +48,25 @@ class Workflow:
         if name == 'close_menu' or name == 'GPIO16':
             if self.get_state() == 'menu':
                 self.set_state('main')
-                self.lcd.clear()
-                self.lcd.show_main()
+                self.display.clear()
+                self.display.show_main()
 
         if name == 'lcd.show_popup':
-            self.lcd.save_screen()
-            self.lcd.show_popup(params['text'])
+            self.display.show_popup(
+                text=params['text'],
+                close_delay=params['close_delay'] if 'close_delay' in params else None
+            )
 
         if name == 'lcd.hide_popup':
-            self.lcd.restore_screen()
+            self.display.hide_popup()
 
         if name == 'sys.shutdown':
-            self.lcd.shutdown()
+            self.display.shutdown()
             self.app_works = False
             # os.system("sudo shutdown -h now")
 
         if name == 'spotify.connect':
-            self.lcd.show_authorize()
+            self.display.show_authorize()
 
         if name == 'spotify.device':
             if params['device'] is None:
