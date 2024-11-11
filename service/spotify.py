@@ -106,6 +106,8 @@ class Spotify(threading.Thread):
 
     def start_play(self):
         device = self.config.get_param('spotify.last_device')
+        if device is None:
+            return
         if not device['is_active']:
             self.transfer_playback(device)
         else:

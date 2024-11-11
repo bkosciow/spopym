@@ -52,6 +52,7 @@ display.start()
 
 ble.quick_scan()
 
+
 def shutdown():
     # menu.shutdown()
     spotify.shutdown()
@@ -71,4 +72,5 @@ try:
         time.sleep(1)
 
 except KeyboardInterrupt:
+    logger.info('Shutting down')
     shutdown()
