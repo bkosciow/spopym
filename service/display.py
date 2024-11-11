@@ -15,20 +15,19 @@ class Display(threading.Thread):
         self.refresh_tick = refresh_tick
         self.saved_lcd = None
         self.config = config
+
         drv = SPI()
         self.size = (128, 64)
         self.raw_lcd = SSD1306(self.size[0], self.size[1], drv)
         self.raw_lcd.init()
-
         drv = HD44780(self.raw_lcd, True)
         self.lcd = CharLCD(drv.width, drv.height, drv, 0, 0)
         self.lcd.init()
 
         self.menu_top_offset = 1
-        self.work = True
+        self.menu_content_height = self.lcd.height - 2
 
-    # def __getattr__(self, attr):
-    #     return getattr(self.lcd, attr)
+        self.work = True
 
     def show_main(self):
         ip = check_output(['hostname', '-I']).decode('utf8')
@@ -61,6 +60,7 @@ class Display(threading.Thread):
         self.work = False
         self.clear()
         self.lcd.write("Goodbye", 4, 4)
+        self.lcd.flush(True)
 
     def clear(self):
         for i in range(0, self.lcd.height):
@@ -80,12 +80,18 @@ class Display(threading.Thread):
         self.lcd.write("*" * (len(text) + 4), x_offset, y_offset + 4)
 
     def show_menu(self, menu, clear, selected_position):
+        begin = (selected_position // self.menu_content_height) * self.menu_content_height
+        end = begin + self.menu_content_height
         if clear:
             self.clear()
+
+        menu = menu[begin:end]
         idx = 0
         for item in menu:
-            self.lcd.write(item, 0, idx + self.menu_top_offset)
+            self.lcd.write(item + " " * (self.lcd.width-len(item)), 0, idx + self.menu_top_offset)
             idx += 1
+        for i in range(idx, self.menu_content_height):
+            self.lcd.write(" " * self.lcd.width, 0, i + self.menu_top_offset)
 
     def restore_screen(self):
         self.lcd.buffer = self.saved_lcd

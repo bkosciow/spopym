@@ -44,7 +44,6 @@ menu.add_menu_item(MenuItem('Spotify', generator=spotify.get_menu))
 menu.add_menu_item(MenuItem('BLE', generator=ble.get_menu))
 menu.add_menu_item(MenuItem('Shutdown', action_name="sys.shutdown", callback=workflow.menu_action))
 
-
 display.clear()
 display.show_main()
 
@@ -73,4 +72,3 @@ try:
 
 except KeyboardInterrupt:
     shutdown()
-
