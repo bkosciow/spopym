@@ -2,9 +2,10 @@ from gpiozero import RotaryEncoder, Button, LED
 
 
 class Control:
-    def __init__(self, callback=None):
-        self.rotor = RotaryEncoder(19, 26, wrap=True, max_steps=180)
-        self.rotor_btn = Button(21, pull_up=False, bounce_time=0.100)
+    def __init__(self, config, callback=None):
+        self.config = config
+        self.rotor = RotaryEncoder(config.get("rotary_encoder.pin_a"), config.get("rotary_encoder.pin_b"), wrap=True, max_steps=180)
+        self.rotor_btn = Button(config.get("rotary_encoder.pin_button"), pull_up=False, bounce_time=0.100)
         self.encoder_last = 0
         self.callback = callback
         self.rotor.when_rotated = self.rotate_encoder

@@ -27,7 +27,7 @@ cfg = Config()
 spotify = Spotify(cfg)
 display = Display(cfg)
 menu = Menu(cfg, display)
-control = Control()
+control = Control(cfg)
 ble = BLE(cfg, storage)
 workflow = Workflow(cfg, display, menu, spotify, ble)
 
