@@ -42,7 +42,7 @@ class Workflow:
             if self.get_state() == "main":
                 self.spotify.decrease_volume()
 
-        if name == 'close_menu' or name == 'GPIO16':
+        if name == 'close_menu' or name == 'BTN_HOME':
             if self.get_state() == 'menu':
                 self.set_state('main')
                 self.display.clear()
@@ -71,7 +71,7 @@ class Workflow:
             else:
                 self.spotify.set_device(params['device'])
 
-        if name == 'ble.scan' or (self.get_state() == 'main' and name == 'GPIO5'):
+        if name == 'ble.scan' or (self.get_state() == 'main' and name == 'BTN_C'):
             self.ble.scan()
 
         if name == 'next':
@@ -80,7 +80,7 @@ class Workflow:
         if name == 'prev':
             self.spotify.prev_track()
 
-        if name == 'play' or (self.get_state() == 'main' and name == 'GPIO25'):
+        if name == 'play' or (self.get_state() == 'main' and name == 'BTN_B'):
             self.spotify.start_play()
 
         if name == 'stop':

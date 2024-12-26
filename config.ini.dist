@@ -2,7 +2,7 @@
 
 
 [message]
-node_name=spotify-node
+node_name=spotify-node - leave empty to disable node system
 encoder=iot_message.cryptor.aes_sha1
 encoder_params=abcdef2345678901,2345678901abcdef,0123456789abcdef,mypassphrase
 ip=192.168.1.255
@@ -13,3 +13,18 @@ client_id=aaa
 client_secret=bbb
 redirect_uri=http://127.0.0.1:9090
 scope=user-read-playback-state,user-modify-playback-state
+
+[rotary_encoder]
+pin_a=19
+pin_b=26
+pin_button=21
+
+[buttons]
+btn_home=16
+btn_a=20
+btn_b=25
+btn_c=5
+btn_d=
+btn_back=
+btn_ble=
+btn_source=
