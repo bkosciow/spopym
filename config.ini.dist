@@ -28,3 +28,7 @@ btn_d=
 btn_back=
 btn_ble=
 btn_source=
+
+[leds]
+led_power=4
+led_ble=

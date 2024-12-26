@@ -29,7 +29,7 @@ control = Control(cfg)
 display = Display(cfg)
 menu = Menu(cfg, display)
 ble = BLE(cfg, storage)
-workflow = Workflow(cfg, display, menu, spotify, ble)
+workflow = Workflow(cfg, display, menu, spotify, ble, control)
 
 menu.close_event = workflow.menu_action
 control.callback = workflow.menu_action
@@ -41,6 +41,8 @@ spotify.add_track_callback(ble.broadcast_to_lcd)
 menu.add_menu_item(MenuItem('Spotify', generator=spotify.get_menu))
 menu.add_menu_item(MenuItem('BLE', generator=ble.get_menu))
 menu.add_menu_item(MenuItem('Shutdown', action_name="sys.shutdown", callback=workflow.menu_action))
+
+workflow.menu_action('enable_led', {'name': 'LED_POWER'})
 
 display.clear()
 display.show_main()
@@ -60,6 +62,7 @@ def shutdown():
 
 
 signal.signal(signal.SIGTERM, shutdown)
+
 
 try:
     while workflow.app_works:

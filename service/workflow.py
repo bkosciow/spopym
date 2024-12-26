@@ -1,11 +1,12 @@
 
 
 class Workflow:
-    def __init__(self, config, display, menu, spotify, ble):
+    def __init__(self, config, display, menu, spotify, ble, control):
         self.config = config
         self.menu = menu
         self.display = display
         self.ble = ble
+        self.control = control
         self.set_state('main')
         self.spotify = spotify
         self.app_works = True
@@ -18,6 +19,7 @@ class Workflow:
 
     def shutdown(self):
         self.app_works = False
+        self.menu_action('disable_led', {'name': 'LED_POWER'})
 
     def menu_action(self, name, params=None):
         if params is None:
@@ -85,3 +87,9 @@ class Workflow:
 
         if name == 'stop':
             self.spotify.pause_play()
+
+        if name == 'enable_led':
+            self.control.enable_led(params['name'])
+
+        if name == 'disable_led':
+            self.control.disable_led(params['name'])

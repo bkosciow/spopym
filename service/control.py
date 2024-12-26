@@ -11,6 +11,7 @@ class Control:
         self.rotor.when_rotated = self.rotate_encoder
         self.rotor_btn.when_released = self.click_encoder
         self.button_mapper = {}
+        self.led_mapper = {}
 
         for item in self.config.get_section('buttons'):
             if item.startswith('btn_'):
@@ -20,8 +21,11 @@ class Control:
                     button.when_released = self.click_button
                     self.button_mapper[button.pin.number] = item.upper()
 
-        self.power_led = LED(4)
-        self.power_led.on()
+        for item in self.config.get_section('leds'):
+            if item.startswith('led_'):
+                pin = self.config.get("""leds.%s""" % item)
+                if pin:
+                    self.led_mapper[item.upper()] = LED(pin)
 
     def rotate_encoder(self):
         if self.encoder_last < self.rotor.steps:
@@ -38,4 +42,12 @@ class Control:
         self.callback(self.button_mapper[v.pin.number])
 
     def shutdown(self):
-        self.power_led.off()
+        pass
+
+    def enable_led(self, led_name):
+        if led_name in self.led_mapper:
+            self.led_mapper[led_name].on()
+
+    def disable_led(self, led_name):
+        if led_name in self.led_mapper:
+            self.led_mapper[led_name].off()
