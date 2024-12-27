@@ -32,3 +32,12 @@ btn_source=
 [leds]
 led_power=4
 led_ble=
+
+[display]
+driver=gfxlcd.driver.ssd1306.spi
+driver_params={"RST":13, "DC":6, "CS": null}
+device=gfxlcd.driver.ssd1306.ssd1306
+device_size=128,64
+device_rotation=0
+handler=display.gfxlcd
+

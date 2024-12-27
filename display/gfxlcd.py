@@ -1,11 +1,12 @@
 import RPi.GPIO
-from gfxlcd.driver.ssd1306.spi import SPI
-from gfxlcd.driver.ssd1306.ssd1306 import SSD1306
 from charlcd.buffered import CharLCD
 from gfxlcd.driver.hd44780 import HD44780
 from subprocess import check_output
 import threading
 import time
+import pathlib
+import json
+from importlib import import_module
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 
 
@@ -26,17 +27,27 @@ class Popup:
                 self.display.hide_popup()
 
 
-class Display(threading.Thread):
-    def __init__(self, config, refresh_tick=0.2):
+class GFXLCD(threading.Thread):
+    def __init__(self, config):
         super().__init__()
-        self.refresh_tick = refresh_tick
+        self.refresh_tick = 0.2
         self.saved_content = None
         self.config = config
 
-        drv = SPI()
-        self.size = (128, 64)
-        self.raw_lcd = SSD1306(self.size[0], self.size[1], drv)
+        drv_name = (pathlib.Path(self.config.get('display.driver')).suffix[1:]).upper()
+        drv_class = getattr(import_module(self.config.get('display.driver')), drv_name)
+        drv_params = json.loads(self.config.get('display.driver_params'))
+        drv = drv_class(**drv_params)
+
+        device_name = (pathlib.Path(self.config.get('display.device')).suffix[1:]).upper()
+        device_class = getattr(import_module(self.config.get('display.device')), device_name)
+
+        self.size = self.config.get('display.device_size').split(",")
+
+        self.raw_lcd = device_class(int(self.size[0]), int(self.size[1]), drv)
+        self.raw_lcd.rotation = int(self.config.get('display.device_rotation'))
         self.raw_lcd.init()
+
         drv = HD44780(self.raw_lcd, True)
         self.lcd = CharLCD(drv.width, drv.height, drv, 0, 0)
         self.lcd.init()

@@ -1,7 +1,7 @@
 from service.menu import Menu, MenuItem
 import logging
 import RPi.GPIO
-from service.display import Display
+import pathlib
 from service.control import Control
 from service.workflow import Workflow
 from service.spotify import Spotify
@@ -11,6 +11,7 @@ from service.ble import BLE
 import time
 from micro_storage.storage import Storage
 from micro_storage.sqlite_engine import SQLiteEngine
+from importlib import import_module
 
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 
@@ -21,12 +22,16 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 Storage.set_engine(SQLiteEngine())
-storage = Storage()
 
+storage = Storage()
 cfg = Config()
+
+display_name = (pathlib.Path(cfg.get('display.handler')).suffix[1:]).upper()
+display_class = getattr(import_module(cfg.get('display.handler')), display_name)
+
 spotify = Spotify(cfg)
 control = Control(cfg)
-display = Display(cfg)
+display = display_class(cfg)
 menu = Menu(cfg, display)
 ble = BLE(cfg, storage)
 workflow = Workflow(cfg, display, menu, spotify, ble, control)
