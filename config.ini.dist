@@ -40,4 +40,5 @@ device=gfxlcd.driver.ssd1306.ssd1306
 device_size=128,64
 device_rotation=0
 handler=display.gfxlcd
-
+xy_callback=
+#display.xy_callback.transform_half

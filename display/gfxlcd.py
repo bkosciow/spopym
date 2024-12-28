@@ -46,6 +46,12 @@ class GFXLCD(threading.Thread):
 
         self.raw_lcd = device_class(int(self.size[0]), int(self.size[1]), drv)
         self.raw_lcd.rotation = int(self.config.get('display.device_rotation'))
+
+        xy_callback = self.config.get('display.xy_callback')
+        if xy_callback:
+            module_path, func_name = xy_callback.rsplit('.', 1)
+            self.raw_lcd.xy_callback = getattr(import_module(module_path), func_name)
+
         self.raw_lcd.init()
 
         drv = HD44780(self.raw_lcd, True)
