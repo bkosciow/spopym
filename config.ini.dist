@@ -39,6 +39,12 @@ driver_params={"RST":13, "DC":6, "CS": null}
 device=gfxlcd.driver.ssd1306.ssd1306
 device_size=128,64
 device_rotation=0
+device_offset=0,0
 handler=display.gfxlcd
 xy_callback=
-#display.xy_callback.transform_half
+
+#driver=gfxlcd.driver.sh1106.spi
+#device=gfxlcd.driver.sh1106.sh1106
+#device_size=132,64
+#device_offset=1,0
+#xy_callback=display.xy_callback.transform_half

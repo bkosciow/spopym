@@ -58,43 +58,45 @@ class GFXLCD(threading.Thread):
         self.lcd = CharLCD(drv.width, drv.height, drv, 0, 0)
         self.lcd.init()
 
-        self.menu_top_offset = 1
-        self.menu_content_height = self.lcd.height - 2
+        self.offsets = list(map(int, self.config.get('display.device_offset').split(",")))
+
+        self.menu_top_offset = 1 + self.offsets[1]
+        self.menu_content_height = self.lcd.height - 2 - self.offsets[1]
 
         self.work = True
         self.popup = None
 
     def show_main(self):
         ip = check_output(['hostname', '-I']).decode('utf8')
-        self.lcd.write(ip.strip(), 0, 0)
+        self.lcd.write(ip.strip(), 0+self.offsets[0], 0+self.offsets[1])
         bottom_bar = ""
         if not self.config.get_param("spotify_token"):
-            self.lcd.write("Spotify: D/C", 0, 2)
+            self.lcd.write("Spotify: D/C", 0+self.offsets[0], 2+self.offsets[1])
             bottom_bar = "[ ]" + bottom_bar
         else:
             device_name = self.config.get_param('spotify.device')['name'] if self.config.get_param('spotify.device') else '----'
             volume = self.config.get_param('spotify.device')['volume_percent'] if self.config.get_param('spotify.device') else '--'
-            self.lcd.write(device_name.ljust(self.lcd.width), 0, 6)
-            self.lcd.write(str(volume).ljust(3), 0, 7)
+            self.lcd.write(device_name.ljust(self.lcd.width), 0+self.offsets[0], 6+self.offsets[1])
+            self.lcd.write(str(volume).ljust(3), 0+self.offsets[0], 7+self.offsets[1])
             bottom_bar = "[S]" + bottom_bar
 
         if self.config.get_param('use_message'):
             bottom_bar = "[M]" + bottom_bar
 
         bottom_bar = "[" + str(self.config.get_param('ble_no_devices')) + "]" + bottom_bar
-        self.lcd.write(bottom_bar, 16 - len(bottom_bar), 7)
+        self.lcd.write(bottom_bar, 16 - len(bottom_bar)+self.offsets[0], 7+self.offsets[1])
 
     def show_authorize(self):
-        self.lcd.write("Go to terminal", 0, 1)
-        self.lcd.write("and run: ", 0, 2)
-        self.lcd.write("auth.py", 2, 4)
+        self.lcd.write("Go to terminal", 0+self.offsets[0], 1+self.offsets[1])
+        self.lcd.write("and run: ", 0+self.offsets[0], 2+self.offsets[1])
+        self.lcd.write("auth.py", 2+self.offsets[0], 4+self.offsets[1])
 
-        self.lcd.write("Then restart app", 0, 6)
+        self.lcd.write("Then restart app", 0+self.offsets[0], 6+self.offsets[1])
 
     def shutdown(self):
         self.work = False
         self.clear()
-        self.lcd.write("Goodbye", 4, 4)
+        self.lcd.write("Goodbye", 4+self.offsets[0], 4+self.offsets[1])
         self.lcd.flush(True)
 
     def clear(self):
@@ -112,8 +114,8 @@ class GFXLCD(threading.Thread):
     def refresh_popup(self):
         text = self.popup.get_text()
         x_offset = (self.lcd.width - len(text)) // 2
-        x_offset -= 2
-        y_offset = 2
+        x_offset -= 2 + self.offsets[0]
+        y_offset = 2 + self.offsets[1]
         self.lcd.write("*" * (len(text) + 4), x_offset, y_offset)
         self.lcd.write("* " + (" " * len(text)) + " *", x_offset, y_offset + 1)
         self.lcd.write("* " + text + " *", x_offset, y_offset + 2)
@@ -129,10 +131,10 @@ class GFXLCD(threading.Thread):
         menu = menu[begin:end]
         idx = 0
         for item in menu:
-            self.lcd.write(item + " " * (self.lcd.width-len(item)), 0, idx + self.menu_top_offset)
+            self.lcd.write(item + " " * (self.lcd.width-len(item)), 0+self.offsets[0], idx + self.menu_top_offset)
             idx += 1
         for i in range(idx, self.menu_content_height):
-            self.lcd.write(" " * self.lcd.width, 0, i + self.menu_top_offset)
+            self.lcd.write(" " * self.lcd.width, 0+self.offsets[0], i + self.menu_top_offset)
 
     def refresh_lcd(self):
         if self.config.get_param('state') == 'main':
