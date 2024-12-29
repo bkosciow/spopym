@@ -84,7 +84,7 @@ class GFXLCD(threading.Thread):
             bottom_bar = "[M]" + bottom_bar
 
         bottom_bar = "[" + str(self.config.get_param('ble_no_devices')) + "]" + bottom_bar
-        self.lcd.write(bottom_bar, 16 - len(bottom_bar)+self.offsets[0], 7+self.offsets[1])
+        self.lcd.write(bottom_bar, 16 - len(bottom_bar), 7+self.offsets[1])
 
     def show_authorize(self):
         self.lcd.write("Go to terminal", 0+self.offsets[0], 1+self.offsets[1])
