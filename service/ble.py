@@ -1,6 +1,6 @@
 from micro_ble.ble_helper import BLEHelper
 from service.menu import MenuItem
-
+import bluepy
 
 DEVICE = '66b2c551-50df-4188-a436-d6858835fbe0'
 DEVICE_LCD = '66b2c551-50df-4188-a436-d6858835fbe2'
@@ -32,10 +32,16 @@ class BLE:
 
     def scan(self):
         self.menu_callback("lcd.show_popup", {"text": "Scanning"})
-        addresses = self.ble_helper.scan()
-        self.storage.set(KEY_LAST_DEVICES, addresses)
-        self.config.set_param('ble_no_devices', self.ble_helper.count_devices())
-        self.menu_callback("lcd.hide_popup")
+        try:
+            addresses = self.ble_helper.scan()
+            self.storage.set(KEY_LAST_DEVICES, addresses)
+            self.config.set_param('ble_no_devices', self.ble_helper.count_devices())
+            self.menu_callback("lcd.hide_popup")
+        except bluepy.btle.BTLEManagementError as e:
+            self.menu_callback("lcd.hide_popup")
+            if e.estat == 20:
+                self.menu_callback("lcd.show_popup", {"text": "Root req", "close_delay": 3})
+
         self.cache = {}
 
     def quick_scan(self):

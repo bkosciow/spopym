@@ -29,6 +29,15 @@ btn_back=
 btn_ble=
 btn_source=
 
+#btn_home=17
+#btn_a=27
+#btn_b=24
+#btn_c=26
+#btn_d=5
+#btn_back=4
+#btn_ble=23
+#btn_source=22
+
 [leds]
 led_power=4
 led_ble=

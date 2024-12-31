@@ -38,7 +38,8 @@ class Control:
         self.callback('encoder_click')
 
     def click_button(self, v):
-        # print(self.button_mapper[v.pin.number])
+        print(v)
+        print(self.button_mapper[v.pin.number])
         self.callback(self.button_mapper[v.pin.number])
 
     def shutdown(self):
