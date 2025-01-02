@@ -50,6 +50,9 @@ class Workflow:
                 self.display.clear()
                 self.display.show_main()
 
+        if name == 'BTN_BACK' and self.get_state() == 'menu':
+            self.menu.back('back')
+
         if name == 'lcd.show_popup':
             self.display.show_popup(
                 text=params['text'],
@@ -73,7 +76,7 @@ class Workflow:
             else:
                 self.spotify.set_device(params['device'])
 
-        if name == 'ble.scan' or (self.get_state() == 'main' and name == 'BTN_C'):
+        if name == 'ble.scan' or (self.get_state() == 'main' and name == 'BTN_BLE'):
             self.ble.scan()
 
         if name == 'next':
