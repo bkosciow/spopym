@@ -20,6 +20,7 @@ class Workflow:
     def shutdown(self):
         self.app_works = False
         self.menu_action('disable_led', {'name': 'LED_POWER'})
+        self.menu_action('disable_led', {'name': 'LED_BLE'})
 
     def menu_action(self, name, params=None):
         if params is None:
