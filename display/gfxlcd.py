@@ -33,6 +33,14 @@ class GFXLCD(threading.Thread):
         self.refresh_tick = 0.2
         self.saved_content = None
         self.config = config
+        self.additional = {
+            "data": {
+                'ip': '- - -',
+                'temp': '?',
+            },
+            "tick": 10,
+            'last': 0.0
+        }
 
         drv_name = (pathlib.Path(self.config.get('display.driver')).suffix[1:]).upper()
         drv_class = getattr(import_module(self.config.get('display.driver')), drv_name)
@@ -66,24 +74,28 @@ class GFXLCD(threading.Thread):
         self.work = True
         self.popup = None
 
+    def fetch_additional_data(self):
+        self.additional['data']['ip'] = check_output(['hostname', '-I']).decode('utf8')
+        self.additional['data']['temp'] = check_output(['vcgencmd', 'measure_temp']).decode('utf8').replace('temp=', '').split('.')[0]
+
     def show_main(self):
-        ip = check_output(['hostname', '-I']).decode('utf8')
-        self.lcd.write(ip.strip(), 0+self.offsets[0], 0+self.offsets[1])
-        bottom_bar = ""
+        bottom_bar = []
+        self.lcd.write(self.additional['data']['ip'].strip(), 0+self.offsets[0], 0+self.offsets[1])
+        bottom_bar.append(self.additional['data']['temp'])
+        bottom_bar.append(str(self.config.get_param('ble_no_devices')))
         if not self.config.get_param("spotify_token"):
             self.lcd.write("Spotify: D/C", 0+self.offsets[0], 2+self.offsets[1])
-            bottom_bar = "[ ]" + bottom_bar
         else:
             device_name = self.config.get_param('spotify.device')['name'] if self.config.get_param('spotify.device') else '----'
             volume = self.config.get_param('spotify.device')['volume_percent'] if self.config.get_param('spotify.device') else '--'
             self.lcd.write(device_name.ljust(self.lcd.width), 0+self.offsets[0], 6+self.offsets[1])
             self.lcd.write(str(volume).ljust(3), 0+self.offsets[0], 7+self.offsets[1])
-            bottom_bar = "[S]" + bottom_bar
+            bottom_bar.append("S")
 
         if self.config.get_param('use_message'):
-            bottom_bar = "[M]" + bottom_bar
+            bottom_bar.append("M")
 
-        bottom_bar = "[" + str(self.config.get_param('ble_no_devices')) + "]" + bottom_bar
+        bottom_bar = "|".join(bottom_bar)
         self.lcd.write(bottom_bar, 16 - len(bottom_bar), 7+self.offsets[1])
 
     def show_authorize(self):
@@ -143,6 +155,10 @@ class GFXLCD(threading.Thread):
     def run(self):
         while self.work:
             start = time.time()
+            if self.additional['last'] + self.additional['tick'] < start:
+                self.additional['last'] = start
+                self.fetch_additional_data()
+
             self.refresh_lcd()
             if self.popup:
                 self.popup.tick()

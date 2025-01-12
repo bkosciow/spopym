@@ -141,6 +141,8 @@ class Spotify(threading.Thread):
             if e.code == 403 and 'Player command failed: Restriction violated' in e.msg:
                 self.transfer_playback(self.config.get_param('spotify.device'))
                 self._safe_call(f, p)
+        except requests.exceptions.ConnectionError as e:
+            print("Connection aborted")
 
     def set_device(self, device):
         if device is None:
