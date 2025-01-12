@@ -11,9 +11,6 @@ https://github.com/bkosciow/spopym
 https://github.com/bkosciow/spopym_hd44780
 
 
-Requires:
+![both](doc/both.jpg)
 
-pip spotipy
-pip install git+https://github.com/bkosciow/micro_storage.git@main
-
-
+![both](doc/both1.jpg)
