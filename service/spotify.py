@@ -122,6 +122,11 @@ class Spotify(threading.Thread):
         if device and self.data.is_playing():
             self._safe_call(self.spotify.pause_playback, {"device_id": device['id']})
 
+    def shuffle_toggle(self):
+        device = self.config.get_param('spotify.device')
+        if device:
+            self._safe_call(self.spotify.shuffle, {"device_id": device['id'], 'state': not self.data.get_data()['shuffle']})
+
     def transfer_playback(self, device):
         self._safe_call(self.spotify.transfer_playback, {"device_id": device['id']})
 

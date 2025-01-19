@@ -92,6 +92,9 @@ class Workflow:
         if name == 'stop':
             self.spotify.pause_play()
 
+        if name == 'shuffle':
+            self.spotify.shuffle_toggle()
+
         if name == 'enable_led':
             self.control.enable_led(params['name'])
 
