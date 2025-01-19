@@ -30,6 +30,8 @@ class Spotify(threading.Thread):
         self.work = True
         self.track_callback = []
         self.get_devices()
+        self.play_modes = ["shuffle_state", "smart_shuffle", "repeat_state", "none"]
+        self.play_mode_idx = None
 
     def add_track_callback(self, cb):
         self.track_callback.append(cb)
@@ -169,7 +171,9 @@ class Spotify(threading.Thread):
                             cb(self.data)
                 except requests.exceptions.ReadTimeout as e:
                     logger.info("API timeout")
-                    pass
+                except requests.exceptions.ConnectionError as e:
+                    logger.info("Connection aborted.")
+                    print("Connection aborted")
 
             diff = (time.time() - start)
             if self.fetch_tick - diff > 0:
