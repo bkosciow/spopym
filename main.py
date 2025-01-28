@@ -8,6 +8,7 @@ from service.spotify import Spotify
 import signal
 from service.config import Config
 from service.ble import BLE
+from service.security import Security
 import time
 from micro_storage.storage import Storage
 from micro_storage.sqlite_engine import SQLiteEngine
@@ -34,7 +35,14 @@ control = Control(cfg)
 display = display_class(cfg)
 menu = Menu(cfg, display)
 ble = BLE(cfg, storage)
-workflow = Workflow(cfg, display, menu, spotify, ble, control)
+workflow = Workflow(cfg) # , display, menu, spotify, ble, control)
+security = Security(cfg, storage)
+
+workflow.add_handler(display)
+workflow.add_handler(menu)
+workflow.add_handler(spotify)
+workflow.add_handler(ble)
+workflow.add_handler(control)
 
 menu.close_event = workflow.menu_action
 control.callback = workflow.menu_action
@@ -42,9 +50,11 @@ spotify.auth_callback = workflow.menu_action
 spotify.menu_callback = workflow.menu_action
 ble.menu_callback = workflow.menu_action
 spotify.add_track_callback(ble.broadcast_to_lcd)
+security.menu_callback = workflow.menu_action
 
 menu.add_menu_item(MenuItem('Spotify', generator=spotify.get_menu))
 menu.add_menu_item(MenuItem('BLE', generator=ble.get_menu))
+menu.add_menu_item(MenuItem('Security', generator=security.get_menu))
 menu.add_menu_item(MenuItem('Shutdown', action_name="sys.shutdown", callback=workflow.menu_action))
 
 workflow.menu_action('enable_led', {'name': 'LED_POWER'})

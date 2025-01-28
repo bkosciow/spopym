@@ -1,6 +1,7 @@
 from micro_ble.ble_helper import BLEHelper
 from service.menu import MenuItem
 import bluepy
+from service.action_interface import ActionInterface
 
 DEVICE = '66b2c551-50df-4188-a436-d6858835fbe0'
 DEVICE_LCD = '66b2c551-50df-4188-a436-d6858835fbe2'
@@ -12,10 +13,10 @@ SERVICES = {
 KEY_LAST_DEVICES = 'last_ble_devices'
 
 
-class BLE:
+class BLE(ActionInterface):
     def __init__(self, config, storage):
+        ActionInterface.__init__(self, config)
         self.menu_callback = None
-        self.config = config
         self.storage = storage
         self.config.set_param('ble_no_devices', 0)
         self.ble_helper = BLEHelper()
@@ -71,3 +72,7 @@ class BLE:
 
     def get_data(self):
         return self.ble_helper.get_data()
+
+    def handle_action(self, state, action, params):
+        if action == 'ble.scan' or (state == 'main' and action == 'BTN_BLE'):
+            self.scan()

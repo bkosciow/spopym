@@ -2,6 +2,7 @@ import RPi.GPIO
 from charlcd.buffered import CharLCD
 from gfxlcd.driver.hd44780 import HD44780
 from subprocess import check_output
+from service.action_interface import ActionInterface
 import threading
 import time
 import pathlib
@@ -27,12 +28,12 @@ class Popup:
                 self.display.hide_popup()
 
 
-class GFXLCD(threading.Thread):
+class GFXLCD(threading.Thread, ActionInterface):
     def __init__(self, config):
         super().__init__()
+        ActionInterface.__init__(self, config)
         self.refresh_tick = 0.2
         self.saved_content = None
-        self.config = config
         self.additional = {
             "data": {
                 'ip': '- - -',
@@ -168,3 +169,25 @@ class GFXLCD(threading.Thread):
             diff = (time.time() - start)
             if self.refresh_tick - diff > 0:
                 time.sleep(self.refresh_tick - diff)
+
+    def handle_action(self, state, action, params):
+        if action == 'close_menu' or action == 'BTN_HOME':
+            if state == 'menu':
+                self.set_state('main')
+                self.clear()
+                self.show_main()
+
+        if action == 'lcd.show_popup':
+            self.show_popup(
+                text=params['text'],
+                close_delay=params['close_delay'] if 'close_delay' in params else None
+            )
+
+        if action == 'lcd.hide_popup':
+            self.hide_popup()
+
+        if action == 'spotify.connect':
+            self.show_authorize()
+
+        if action == 'sys.shutdown':
+            self.shutdown()

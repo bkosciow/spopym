@@ -1,9 +1,10 @@
 from gpiozero import RotaryEncoder, Button, LED
+from service.action_interface import ActionInterface
 
 
-class Control:
+class Control(ActionInterface):
     def __init__(self, config, action_callback=None):
-        self.config = config
+        ActionInterface.__init__(self, config)
         self.callback = action_callback
         self.rotor = RotaryEncoder(config.get("rotary_encoder.pin_a"), config.get("rotary_encoder.pin_b"), wrap=True, max_steps=180)
         self.rotor_btn = Button(config.get("rotary_encoder.pin_button"), pull_up=False, bounce_time=0.100)
@@ -52,3 +53,10 @@ class Control:
     def disable_led(self, led_name):
         if led_name in self.led_mapper:
             self.led_mapper[led_name].off()
+
+    def handle_action(self, state, action, params):
+        if action == 'enable_led':
+            self.enable_led(params['name'])
+
+        if action == 'disable_led':
+            self.disable_led(params['name'])

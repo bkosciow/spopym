@@ -2,6 +2,7 @@ import spotipy
 from spotipy.oauth2 import SpotifyOAuth
 from service.track_data import TrackData
 from service.menu import MenuItem
+from service.action_interface import ActionInterface
 import threading
 import time
 import logging
@@ -10,10 +11,10 @@ import requests
 logger = logging.getLogger(__name__)
 
 
-class Spotify(threading.Thread):
+class Spotify(threading.Thread, ActionInterface):
     def __init__(self, config, fetch_tick=2):
         super().__init__()
-
+        ActionInterface.__init__(self, config)
         self.config = config
         self.fetch_tick = fetch_tick
         self.spotify = spotipy.Spotify(auth_manager=SpotifyOAuth(
@@ -183,3 +184,31 @@ class Spotify(threading.Thread):
             diff = (time.time() - start)
             if self.fetch_tick - diff > 0:
                 time.sleep(self.fetch_tick - diff)
+
+    def handle_action(self, state, action, params):
+        if action == 'encoder_inc' and state == 'main':
+            self.increase_volume()
+
+        if action == 'encoder_dec' and state == 'main':
+            self.decrease_volume()
+
+        if action == 'spotify.device':
+            if params['device'] is None:
+                self.set_device(None)
+            else:
+                self.set_device(params['device'])
+
+        if action == 'next':
+            self.next_track()
+
+        if action == 'prev':
+            self.prev_track()
+
+        if action == 'play' or (state == 'main' and action == 'BTN_B'):
+            self.start_play()
+
+        if action == 'stop':
+            self.pause_play()
+
+        if action == 'shuffle':
+            self.shuffle_toggle()

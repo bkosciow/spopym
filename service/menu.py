@@ -1,3 +1,5 @@
+from service.action_interface import ActionInterface
+
 
 class MenuItem:
     def __init__(self, label, action_name=None, callback=None,
@@ -16,9 +18,9 @@ class MenuItem:
         return self.options is not None or self.generator is not None
 
 
-class Menu:
+class Menu(ActionInterface):
     def __init__(self, config, display):
-        self.config = config
+        ActionInterface.__init__(self, config)
         self.menu = MenuItem("root", options=[])
         self.display = display
         self.markers = {
@@ -111,3 +113,19 @@ class Menu:
             self.position = 0
             self.draw(True)
 
+    def handle_action(self, state, action, params):
+        if action == 'encoder_click':
+            if state == 'main':
+                self.set_state('menu')
+                self.start()
+            elif state == 'menu':
+                self.activate()
+
+        if action == 'encoder_inc' and state == 'menu':
+            self.move_up()
+
+        if action == 'encoder_dec' and state == 'menu':
+            self.move_down()
+
+        if action == 'BTN_BACK' and state == 'menu':
+            self.back('back')
