@@ -35,7 +35,7 @@ control = Control(cfg)
 display = display_class(cfg)
 menu = Menu(cfg, display)
 ble = BLE(cfg, storage)
-workflow = Workflow(cfg) # , display, menu, spotify, ble, control)
+workflow = Workflow(cfg)
 security = Security(cfg, storage)
 
 workflow.add_handler(display)
@@ -43,6 +43,7 @@ workflow.add_handler(menu)
 workflow.add_handler(spotify)
 workflow.add_handler(ble)
 workflow.add_handler(control)
+workflow.add_handler(security)
 
 menu.close_event = workflow.menu_action
 control.callback = workflow.menu_action
