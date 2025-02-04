@@ -29,7 +29,8 @@ class Workflow:
             params = []
         print("menu_action ", name, params)
         for handler in self.handlers:
-            handler.handle_action(self.get_state(), name, params)
+            if handler.handle_action(self.get_state(), name, params) is True:
+                break
 
         if name == 'sys.shutdown':
             self.app_works = False

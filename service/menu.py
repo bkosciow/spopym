@@ -120,6 +120,7 @@ class Menu(ActionInterface):
                 self.start()
             elif state == 'menu':
                 self.activate()
+                return True
 
         if action == 'encoder_inc' and state == 'menu':
             self.move_up()

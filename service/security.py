@@ -12,7 +12,6 @@ class Security(ActionInterface):
         self.storage = storage
         self.menu_callback = None
         self.temp_pattern = []
-        self.ignore_next_click = False
 
     def get_menu(self):
         menu = MenuItem('Lock', options=[])
@@ -41,7 +40,7 @@ class Security(ActionInterface):
         return [menu]
 
     def handle_action(self, state, action, params):
-        if not self.ignore_next_click and state == 'set_pattern':
+        if state == 'set_pattern':
             if action == 'encoder_click':
                 print("pattern=", self.temp_pattern)
                 self.storage.set(self.storage_lock_pattern_name, self.temp_pattern)
@@ -51,13 +50,9 @@ class Security(ActionInterface):
                 print("adding action", action)
                 self.temp_pattern.append(action)
 
-        if self.ignore_next_click:
-            self.ignore_next_click = False
-
         if action == 'security.set_pattern':
             self.set_state('set_pattern')
             self.temp_pattern = []
-            self.ignore_next_click = True
 
         if action == 'security.enable_lock':
             self.storage.set(self.storage_use_lock_name, 1)
