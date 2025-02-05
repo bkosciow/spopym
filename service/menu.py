@@ -30,25 +30,25 @@ class Menu(ActionInterface):
             'not_dir': "   ",
             'back': ' <back> ',
         }
-        self.level = None
-        self.position = 0
+        self.config.set_param("menu.level", None)
+        self.config.set_param("menu.position", 0)
         self.close_event = None
 
     def add_menu_item(self, menu, parent=None):
         self.menu.add(menu)
 
     def start(self):
-        self.level = []
-        self.position = 0
+        self.config.set_param("menu.level", [])
+        self.config.set_param("menu.position", 0)
         self.display.clear()
-        self.draw()
+        self.generate_menu()
 
     def _get_current_menu_item(self):
-        if not self.level:
+        if not self.config.get_param("menu.level"):
             current = self.menu
         else:
             current = None
-            for i in self.level:
+            for i in self.config.get_param("menu.level"):
                 if not current:
                     current = self.menu.options[i]
                 else:
@@ -57,6 +57,7 @@ class Menu(ActionInterface):
         for item in current.options:
             if 'back' == item.action_name:
                 has_back = True
+
         if not has_back:
             current.add(
                 MenuItem(label=self.markers['back'], action_name='back', callback=self.back)
@@ -64,54 +65,54 @@ class Menu(ActionInterface):
 
         return current
 
-    def draw(self, clear=False):
+    def generate_menu(self):
         idx = 0
         menu_item = self._get_current_menu_item()
         menu = []
         for item in menu_item.options:
             appendix = self.markers['dir'] if item.is_dir() else self.markers['not_dir']
-            is_selected = self.markers['selected'] if idx == self.position else self.markers['not_selected']
+            is_selected = self.markers['selected'] if idx == self.config.get_param("menu.position") else self.markers['not_selected']
             menu.append(is_selected + item.label + appendix)
             idx += 1
-        self.display.show_menu(menu, clear, self.position)
+        self.config.set_param("menu.menu", menu)
 
     def move_up(self):
         current = self._get_current_menu_item()
-        if self.position == 0:
-            self.position = len(current.options)-1
+        if self.config.get_param("menu.position") == 0:
+            self.config.set_param("menu.position", len(current.options) - 1)
         else:
-            self.position -= 1
+            self.config.set_param("menu.position", self.config.get_param("menu.position")-1)
 
-        self.draw()
+        self.generate_menu()
 
     def move_down(self):
         current = self._get_current_menu_item()
-        if self.position == len(current.options)-1:
-            self.position = 0
+        if self.config.get_param("menu.position") == len(current.options)-1:
+            self.config.set_param("menu.position", 0)
         else:
-            self.position += 1
+            self.config.set_param("menu.position", self.config.get_param("menu.position")+1)
 
-        self.draw()
+        self.generate_menu()
 
     def activate(self):
         menu_item = self._get_current_menu_item()
-        current = menu_item.options[self.position]
+        current = menu_item.options[self.config.get_param("menu.position")]
         if current.callback is not None:
             current.callback(current.action_name, current.params)
         if current.generator is not None:
             current.options = current.generator()
         if current.options is not None:
-            self.level.append(self.position)
-            self.position = 0
-            self.draw(True)
+            self.config.get_param("menu.level").append(self.config.get_param("menu.position"))
+            self.config.set_param("menu.position", 0)
+            self.generate_menu()
 
     def back(self, action, params=[]):
-        if len(self.level) == 0:
+        if len(self.config.get_param("menu.level")) == 0:
             self.close_event('close_menu')
         else:
-            self.level.pop()
-            self.position = 0
-            self.draw(True)
+            self.config.get_param("menu.level").pop()
+            self.config.set_param("menu.position", 0)
+            self.generate_menu()
 
     def handle_action(self, state, action, params):
         if action == 'encoder_click':

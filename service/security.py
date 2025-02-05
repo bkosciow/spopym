@@ -45,13 +45,16 @@ class Security(ActionInterface):
                 print("pattern=", self.temp_pattern)
                 self.storage.set(self.storage_lock_pattern_name, self.temp_pattern)
                 self.temp_pattern = []
+                self.config.set_param('last_button', '')
                 self.set_state('menu')
             else:
                 print("adding action", action)
+                self.config.set_param('last_button', action)
                 self.temp_pattern.append(action)
 
         if action == 'security.set_pattern':
             self.set_state('set_pattern')
+            self.config.set_param('last_button', '')
             self.temp_pattern = []
 
         if action == 'security.enable_lock':

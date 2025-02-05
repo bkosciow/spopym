@@ -135,11 +135,11 @@ class GFXLCD(threading.Thread, ActionInterface):
         self.lcd.write("* " + (" " * len(text)) + " *", x_offset, y_offset + 3)
         self.lcd.write("*" * (len(text) + 4), x_offset, y_offset + 4)
 
-    def show_menu(self, menu, clear, selected_position):
+    def show_menu(self):
+        menu = self.config.get_param("menu.menu")
+        selected_position = self.config.get_param("menu.position")
         begin = (selected_position // self.menu_content_height) * self.menu_content_height
         end = begin + self.menu_content_height
-        if clear:
-            self.clear()
 
         menu = menu[begin:end]
         idx = 0
@@ -149,9 +149,23 @@ class GFXLCD(threading.Thread, ActionInterface):
         for i in range(idx, self.menu_content_height):
             self.lcd.write(" " * self.lcd.width, 0+self.offsets[0], i + self.menu_top_offset)
 
+    def show_pattern_set(self):
+        self.clear()
+        self.lcd.write("Set unlock", 1 + self.offsets[0], 1 + self.offsets[1])
+        self.lcd.write("pattern", 1 + self.offsets[0], 2 + self.offsets[1])
+        last = self.config.get_param('last_button')
+        if last is not None:
+            self.lcd.write(last, 1 + self.offsets[0], 4 + self.offsets[1])
+
     def refresh_lcd(self):
         if self.config.get_param('state') == 'main':
             self.show_main()
+
+        if self.config.get_param('state') == 'set_pattern':
+            self.show_pattern_set()
+
+        if self.config.get_param('state') == 'menu':
+            self.show_menu()
 
     def run(self):
         while self.work:
