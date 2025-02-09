@@ -57,7 +57,19 @@ class BLE(ActionInterface):
     def broadcast_to_lcd(self, track_data):
         if not self.ble_helper.enabled:
             return
+
         data = track_data.get_data()
+        if self.config.get_param('state') == 'device.locked':
+            for k in data:
+                if isinstance(data[k], str):
+                    data[k] = 'LOCKED'
+                elif isinstance(data[k], int):
+                    data[k] = 0
+                elif isinstance(data[k], bool):
+                    data[k] = False
+                elif isinstance(data[k], float):
+                    data[k] = 0.0
+
         for k, v in data.items():
             if k not in self.cache or v != self.cache[k]:
                 self.cache[k] = v

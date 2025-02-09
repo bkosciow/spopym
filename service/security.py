@@ -42,6 +42,12 @@ class Security(ActionInterface):
     def handle_action(self, state, action, params):
         if state == 'device.locked':
             print("try to unlock")
+            if action == 'BTN_LOCK':
+                self.set_state('main')
+                return
+
+        if state == 'device.locked':
+            return
 
         if state == 'set_pattern':
             if action == 'encoder_click':
