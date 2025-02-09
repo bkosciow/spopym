@@ -186,6 +186,8 @@ class Spotify(threading.Thread, ActionInterface):
                 time.sleep(self.fetch_tick - diff)
 
     def handle_action(self, state, action, params):
+        if state == 'device.locked':
+            return
         if action == 'encoder_inc' and state == 'main':
             self.increase_volume()
 

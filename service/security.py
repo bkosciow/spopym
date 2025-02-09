@@ -40,6 +40,9 @@ class Security(ActionInterface):
         return [menu]
 
     def handle_action(self, state, action, params):
+        if state == 'device.locked':
+            print("try to unlock")
+
         if state == 'set_pattern':
             if action == 'encoder_click':
                 print("pattern=", self.temp_pattern)
@@ -63,5 +66,5 @@ class Security(ActionInterface):
         if action == 'security.disable_lock':
             self.storage.set(self.storage_use_lock_name, None)
 
-        if action == 'security.lock_device':
-            pass
+        if state == 'main' and (action == 'security.lock_device' or action == 'BTN_LOCK') and self.storage.get(self.storage_use_lock_name) == 1:
+            self.set_state('device.locked')

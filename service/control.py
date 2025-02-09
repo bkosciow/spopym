@@ -60,3 +60,6 @@ class Control(ActionInterface):
 
         if action == 'disable_led':
             self.disable_led(params['name'])
+
+        if state == 'device.locked':
+            return

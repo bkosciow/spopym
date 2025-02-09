@@ -157,6 +157,12 @@ class GFXLCD(threading.Thread, ActionInterface):
         if last is not None:
             self.lcd.write(last, 1 + self.offsets[0], 4 + self.offsets[1])
 
+    def show_device_locked(self):
+        self.clear()
+        self.lcd.write("Device locked", 1 + self.offsets[0], 1 + self.offsets[1])
+        self.lcd.write("Enter unclock", 1 + self.offsets[0], 2 + self.offsets[1])
+        self.lcd.write("pattern", 1 + self.offsets[0], 3 + self.offsets[1])
+
     def refresh_lcd(self):
         if self.config.get_param('state') == 'main':
             self.show_main()
@@ -166,6 +172,9 @@ class GFXLCD(threading.Thread, ActionInterface):
 
         if self.config.get_param('state') == 'menu':
             self.show_menu()
+
+        if self.config.get_param('state') == 'device.locked':
+            self.show_device_locked()
 
     def run(self):
         while self.work:
@@ -185,6 +194,10 @@ class GFXLCD(threading.Thread, ActionInterface):
                 time.sleep(self.refresh_tick - diff)
 
     def handle_action(self, state, action, params):
+        if action == 'sys.shutdown':
+            self.shutdown()
+        if state == 'device.locked':
+            return
         if action == 'close_menu' or action == 'BTN_HOME':
             if state == 'menu':
                 self.set_state('main')
@@ -203,5 +216,3 @@ class GFXLCD(threading.Thread, ActionInterface):
         if action == 'spotify.connect':
             self.show_authorize()
 
-        if action == 'sys.shutdown':
-            self.shutdown()

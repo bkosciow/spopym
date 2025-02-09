@@ -74,5 +74,7 @@ class BLE(ActionInterface):
         return self.ble_helper.get_data()
 
     def handle_action(self, state, action, params):
+        if state == 'device.locked':
+            return
         if action == 'ble.scan' or (state == 'main' and action == 'BTN_BLE'):
             self.scan()

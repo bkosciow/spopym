@@ -115,6 +115,8 @@ class Menu(ActionInterface):
             self.generate_menu()
 
     def handle_action(self, state, action, params):
+        if state == 'device.locked':
+            return
         if action == 'encoder_click':
             if state == 'main':
                 self.set_state('menu')
