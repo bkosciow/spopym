@@ -74,6 +74,7 @@ class GFXLCD(threading.Thread, ActionInterface):
 
         self.work = True
         self.popup = None
+        self.last_state = None
 
     def fetch_additional_data(self):
         self.additional['data']['ip'] = check_output(['hostname', '-I']).decode('utf8')
@@ -164,6 +165,10 @@ class GFXLCD(threading.Thread, ActionInterface):
         self.lcd.write("pattern", 1 + self.offsets[0], 3 + self.offsets[1])
 
     def refresh_lcd(self):
+        if self.last_state != self.config.get_param('state'):
+            self.last_state = self.config.get_param('state')
+            self.clear()
+
         if self.config.get_param('state') == 'main':
             self.show_main()
 

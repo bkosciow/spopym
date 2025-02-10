@@ -12,6 +12,7 @@ class Security(ActionInterface):
         self.storage = storage
         self.menu_callback = None
         self.temp_pattern = []
+        self.last_clicks = []
 
     def get_menu(self):
         menu = MenuItem('Lock', options=[])
@@ -41,8 +42,13 @@ class Security(ActionInterface):
 
     def handle_action(self, state, action, params):
         if state == 'device.locked':
-            print("try to unlock")
-            if action == 'BTN_LOCK':
+            self.last_clicks.append(action)
+            pattern = self.storage.get(self.storage_lock_pattern_name)
+
+            if len(self.last_clicks) > len(pattern):
+                self.last_clicks.pop(0)
+
+            if pattern == self.last_clicks:
                 self.set_state('main')
                 return
 
@@ -51,13 +57,11 @@ class Security(ActionInterface):
 
         if state == 'set_pattern':
             if action == 'encoder_click':
-                print("pattern=", self.temp_pattern)
                 self.storage.set(self.storage_lock_pattern_name, self.temp_pattern)
                 self.temp_pattern = []
                 self.config.set_param('last_button', '')
                 self.set_state('menu')
             else:
-                print("adding action", action)
                 self.config.set_param('last_button', action)
                 self.temp_pattern.append(action)
 
@@ -73,4 +77,5 @@ class Security(ActionInterface):
             self.storage.set(self.storage_use_lock_name, None)
 
         if state == 'main' and (action == 'security.lock_device' or action == 'BTN_LOCK') and self.storage.get(self.storage_use_lock_name) == 1:
+            self.last_clicks = []
             self.set_state('device.locked')
