@@ -34,10 +34,6 @@ class Security(ActionInterface):
                     MenuItem('Lock off->on', action_name="security.enable_lock", callback=self.menu_callback)
                 )
 
-            menu.add(
-                MenuItem('Lock now', action_name="security.lock_device", callback=self.menu_callback)
-            )
-
         return [menu]
 
     def handle_action(self, state, action, params):
