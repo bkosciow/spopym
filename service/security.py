@@ -1,6 +1,5 @@
 from service.menu import MenuItem
 from service.action_interface import ActionInterface
-from pprint import pprint
 
 
 class Security(ActionInterface):
@@ -21,8 +20,6 @@ class Security(ActionInterface):
         )
 
         pattern = self.storage.get(self.storage_lock_pattern_name)
-        pprint(pattern)
-        print(type(pattern))
         if pattern is not None:
             lock = self.storage.get(self.storage_use_lock_name)
             if lock == 1:
