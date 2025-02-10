@@ -161,7 +161,7 @@ class GFXLCD(threading.Thread, ActionInterface):
     def show_device_locked(self):
         self.clear()
         self.lcd.write("Device locked", 1 + self.offsets[0], 1 + self.offsets[1])
-        self.lcd.write("Enter unclock", 1 + self.offsets[0], 2 + self.offsets[1])
+        self.lcd.write("Enter unlock", 1 + self.offsets[0], 2 + self.offsets[1])
         self.lcd.write("pattern", 1 + self.offsets[0], 3 + self.offsets[1])
 
     def refresh_lcd(self):
