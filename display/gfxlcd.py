@@ -7,6 +7,8 @@ import threading
 import time
 import pathlib
 import json
+from display.text import TextScroll
+import textwrap
 from importlib import import_module
 RPi.GPIO.setmode(RPi.GPIO.BCM)
 
@@ -34,13 +36,20 @@ class GFXLCD(threading.Thread, ActionInterface):
         ActionInterface.__init__(self, config)
         self.refresh_tick = 0.2
         self.saved_content = None
+        self.track_data = None
         self.additional = {
             "data": {
                 'ip': '- - -',
                 'temp': '?',
             },
             "tick": 10,
-            'last': 0.0
+            'last': 0.0,
+            'title': None,
+            'artist': None,
+        }
+        self.main_screen = {
+            'current': 1,
+            'count': 2,
         }
 
         drv_name = (pathlib.Path(self.config.get('display.driver')).suffix[1:]).upper()
@@ -72,6 +81,9 @@ class GFXLCD(threading.Thread, ActionInterface):
         self.menu_top_offset = 1 + self.offsets[1]
         self.menu_content_height = self.lcd.height - 2 - self.offsets[1]
 
+        self.additional['title'] = TextScroll("- - -", self.lcd.width - self.offsets[0])
+        self.additional['artist'] = TextScroll("- - -", self.lcd.width - self.offsets[0])
+
         self.work = True
         self.popup = None
         self.last_state = None
@@ -80,25 +92,46 @@ class GFXLCD(threading.Thread, ActionInterface):
         self.additional['data']['ip'] = check_output(['hostname', '-I']).decode('utf8')
         self.additional['data']['temp'] = check_output(['vcgencmd', 'measure_temp']).decode('utf8').replace('temp=', '').split('.')[0]
 
+    def set_track_data(self, track_data):
+        self.track_data = track_data
+        data = track_data.get_data()
+        self.additional['title'].set_text(data['title'])
+        self.additional['artist'].set_text(data['artist'])
+
     def show_main(self):
         bottom_bar = []
-        self.lcd.write(self.additional['data']['ip'].strip(), 0+self.offsets[0], 0+self.offsets[1])
-        bottom_bar.append(self.additional['data']['temp'])
-        bottom_bar.append(str(self.config.get_param('ble_no_devices')))
-        if not self.config.get_param("spotify_token"):
-            self.lcd.write("Spotify: D/C", 0+self.offsets[0], 2+self.offsets[1])
-        else:
-            device_name = self.config.get_param('spotify.device')['name'] if self.config.get_param('spotify.device') else '----'
-            volume = self.config.get_param('spotify.device')['volume_percent'] if self.config.get_param('spotify.device') else '--'
-            self.lcd.write(device_name.ljust(self.lcd.width), 0+self.offsets[0], 6+self.offsets[1])
-            self.lcd.write(str(volume).ljust(3), 0+self.offsets[0], 7+self.offsets[1])
-            bottom_bar.append("S")
 
-        if self.config.get_param('use_message'):
-            bottom_bar.append("M")
+        if self.main_screen['current'] == 0:
+            self.lcd.write(self.additional['data']['ip'].strip(), 0+self.offsets[0], 0+self.offsets[1])
+            bottom_bar.append(self.additional['data']['temp'])
+            bottom_bar.append(str(self.config.get_param('ble_no_devices')))
+            if not self.config.get_param("spotify_token"):
+                self.lcd.write("Spotify: D/C", 0+self.offsets[0], 2+self.offsets[1])
+            else:
+                device_name = self.config.get_param('spotify.device')['name'] if self.config.get_param('spotify.device') else '----'
+                volume = self.config.get_param('spotify.device')['volume_percent'] if self.config.get_param('spotify.device') else '--'
+                self.lcd.write(device_name.ljust(self.lcd.width), 0+self.offsets[0], 6+self.offsets[1])
+                self.lcd.write(str(volume).ljust(3), 0+self.offsets[0], 7+self.offsets[1])
+                bottom_bar.append("S")
 
-        bottom_bar = "|".join(bottom_bar)
-        self.lcd.write(bottom_bar, 16 - len(bottom_bar), 7+self.offsets[1])
+            if self.config.get_param('use_message'):
+                bottom_bar.append("M")
+            bottom_bar = "|".join(bottom_bar)
+            self.lcd.write(bottom_bar, 16 - len(bottom_bar), 7 + self.offsets[1])
+
+        if self.main_screen['current'] == 1:
+            if not self.config.get_param("spotify_token"):
+                self.lcd.write("Spotify: D/C", 0+self.offsets[0], 2+self.offsets[1])
+            else:
+                device_name = self.config.get_param('spotify.device')['name'] if self.config.get_param('spotify.device') else '----'
+                volume = self.config.get_param('spotify.device')['volume_percent'] if self.config.get_param('spotify.device') else '--'
+                bottom_bar.append(str(volume).ljust(2))
+                bottom_bar.append(device_name)
+                self.lcd.write(self.additional['artist'].get_tick(), 0+self.offsets[0], 0+self.offsets[1])
+                self.lcd.write(self.additional['title'].get_tick(), 0 + self.offsets[0], 2 + self.offsets[1])
+
+            bottom_bar = " ".join(bottom_bar)
+            self.lcd.write(bottom_bar, 0+self.offsets[0], 7 + self.offsets[1])
 
     def show_authorize(self):
         self.lcd.write("Go to terminal", 0+self.offsets[0], 1+self.offsets[1])
@@ -208,6 +241,11 @@ class GFXLCD(threading.Thread, ActionInterface):
                 self.set_state('main')
                 self.clear()
                 self.show_main()
+            if state == 'main':
+                self.main_screen['current'] += 1
+                if self.main_screen['current'] == self.main_screen['count']:
+                    self.main_screen['current'] = 0
+                self.clear()
 
         if action == 'lcd.show_popup':
             self.show_popup(

@@ -51,6 +51,7 @@ spotify.auth_callback = workflow.menu_action
 spotify.menu_callback = workflow.menu_action
 ble.menu_callback = workflow.menu_action
 spotify.add_track_callback(ble.broadcast_to_lcd)
+spotify.add_track_callback(display.set_track_data)
 security.menu_callback = workflow.menu_action
 
 menu.add_menu_item(MenuItem('Spotify', generator=spotify.get_menu))
