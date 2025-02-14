@@ -46,6 +46,7 @@ class GFXLCD(threading.Thread, ActionInterface):
             'last': 0.0,
             'title': None,
             'artist': None,
+            'track_data': None,
         }
         self.main_screen = {
             'current': 1,
@@ -97,6 +98,7 @@ class GFXLCD(threading.Thread, ActionInterface):
         data = track_data.get_data()
         self.additional['title'].set_text(data['title'])
         self.additional['artist'].set_text(data['artist'])
+        self.additional['track_data'] = data
 
     def show_main(self):
         bottom_bar = []
@@ -127,8 +129,18 @@ class GFXLCD(threading.Thread, ActionInterface):
                 volume = self.config.get_param('spotify.device')['volume_percent'] if self.config.get_param('spotify.device') else '--'
                 bottom_bar.append(str(volume).ljust(2))
                 bottom_bar.append(device_name)
-                self.lcd.write(self.additional['artist'].get_tick(), 0+self.offsets[0], 0+self.offsets[1])
+                self.lcd.write(self.additional['artist'].get_tick(), 0 + self.offsets[0], 0 + self.offsets[1])
                 self.lcd.write(self.additional['title'].get_tick(), 0 + self.offsets[0], 2 + self.offsets[1])
+                progress_bar = '[' + " " * (self.lcd.width - self.offsets[0] - 2) + ']'
+                self.lcd.write(progress_bar, 0 + self.offsets[0], 5)
+                if self.additional['track_data'] is not None:
+                    progress = int(self.additional['track_data']['progress'] * 100 / self.additional['track_data']['length'])
+                    offset = round(progress * len(progress_bar) / 100)
+                    if offset == len(progress_bar):
+                        offset -= 1
+                    self.lcd.write("#", 0 + self.offsets[0] + offset, 5)
+                #     progress[offset] = "#"
+
 
             bottom_bar = " ".join(bottom_bar)
             self.lcd.write(bottom_bar, 0+self.offsets[0], 7 + self.offsets[1])
