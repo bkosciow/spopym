@@ -32,7 +32,7 @@ display_class = getattr(import_module(cfg.get('display.handler')), display_name)
 
 spotify = Spotify(cfg)
 control = Control(cfg)
-display = display_class(cfg)
+display = display_class(cfg, storage)
 menu = Menu(cfg, display)
 ble = BLE(cfg, storage)
 workflow = Workflow(cfg)

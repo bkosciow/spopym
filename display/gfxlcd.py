@@ -31,9 +31,10 @@ class Popup:
 
 
 class GFXLCD(threading.Thread, ActionInterface):
-    def __init__(self, config):
+    def __init__(self, config, storage):
         super().__init__()
         ActionInterface.__init__(self, config)
+        self.storage = storage
         self.refresh_tick = 0.2
         self.saved_content = None
         self.track_data = None
@@ -49,7 +50,7 @@ class GFXLCD(threading.Thread, ActionInterface):
             'track_data': None,
         }
         self.main_screen = {
-            'current': 1,
+            'current': self.storage.get("display.main") if self.storage.get("display.main") else 0,
             'count': 2,
         }
 
@@ -100,6 +101,18 @@ class GFXLCD(threading.Thread, ActionInterface):
         self.additional['artist'].set_text(data['artist'])
         self.additional['track_data'] = data
 
+    def time_to_display(self, data, filler="0"):
+        if data < 0:
+            data = filler * 2
+        elif data < 10:
+            data = filler + str(data)
+        elif data > 99:
+            data = "99"
+        else:
+            data = str(data)
+
+        return data
+
     def show_main(self):
         bottom_bar = []
 
@@ -139,10 +152,10 @@ class GFXLCD(threading.Thread, ActionInterface):
                     if offset == len(progress_bar):
                         offset -= 1
                     self.lcd.write("#", 0 + self.offsets[0] + offset, 5)
-                #     progress[offset] = "#"
-
 
             bottom_bar = " ".join(bottom_bar)
+            if len(bottom_bar) < self.lcd.width - self.offsets[0]:
+                bottom_bar += " " * (self.lcd.width - self.offsets[0]-len(bottom_bar))
             self.lcd.write(bottom_bar, 0+self.offsets[0], 7 + self.offsets[1])
 
     def show_authorize(self):
@@ -257,6 +270,7 @@ class GFXLCD(threading.Thread, ActionInterface):
                 self.main_screen['current'] += 1
                 if self.main_screen['current'] == self.main_screen['count']:
                     self.main_screen['current'] = 0
+                self.storage.set("display.main", self.main_screen['current'])
                 self.clear()
 
         if action == 'lcd.show_popup':
