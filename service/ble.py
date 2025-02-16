@@ -27,9 +27,12 @@ class BLE(ActionInterface):
         self.mtu = 18
 
     def get_menu(self):
-        menu = MenuItem('Scan',  action_name='ble.scan', callback=self.menu_callback)
+        menu = [
+            MenuItem('Scan',  action_name='ble.scan', callback=self.menu_callback),
+            MenuItem('Clear storage', action_name='ble.clear_storage', callback=self.menu_callback),
+        ]
 
-        return [menu]
+        return menu
 
     def scan(self):
         self.menu_callback("lcd.show_popup", {"text": "Scanning"})
@@ -90,3 +93,7 @@ class BLE(ActionInterface):
             return
         if action == 'ble.scan' or (state == 'main' and action == 'BTN_BLE'):
             self.scan()
+        if action == 'ble.clear_storage':
+            self.menu_callback("lcd.show_popup", {"text": "Cleared", "close_delay": 2})
+            self.storage.set(KEY_LAST_DEVICES, None)
+
