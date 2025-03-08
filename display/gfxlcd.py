@@ -34,6 +34,7 @@ class GFXLCD(threading.Thread, ActionInterface):
     def __init__(self, config, storage):
         super().__init__()
         ActionInterface.__init__(self, config)
+        self.display_locked = False
         self.storage = storage
         self.refresh_tick = 0.2
         self.saved_content = None
@@ -72,11 +73,7 @@ class GFXLCD(threading.Thread, ActionInterface):
             module_path, func_name = xy_callback.rsplit('.', 1)
             self.raw_lcd.xy_callback = getattr(import_module(module_path), func_name)
 
-        self.raw_lcd.init()
-
-        drv = HD44780(self.raw_lcd, True)
-        self.lcd = CharLCD(drv.width, drv.height, drv, 0, 0)
-        self.lcd.init()
+        self._init_display()
 
         self.offsets = list(map(int, self.config.get('display.device_offset').split(",")))
 
@@ -89,6 +86,13 @@ class GFXLCD(threading.Thread, ActionInterface):
         self.work = True
         self.popup = None
         self.last_state = None
+
+    def _init_display(self):
+        self.raw_lcd.init()
+
+        drv = HD44780(self.raw_lcd, True)
+        self.lcd = CharLCD(drv.width, drv.height, drv, 0, 0)
+        self.lcd.init()
 
     def fetch_additional_data(self):
         self.additional['data']['ip'] = check_output(['hostname', '-I']).decode('utf8')
@@ -251,7 +255,8 @@ class GFXLCD(threading.Thread, ActionInterface):
                 self.popup.tick()
             if self.popup:
                 self.refresh_popup()
-            self.lcd.flush(True)
+            if not self.display_locked:
+                self.lcd.flush(True)
             diff = (time.time() - start)
             if self.refresh_tick - diff > 0:
                 time.sleep(self.refresh_tick - diff)
@@ -261,6 +266,11 @@ class GFXLCD(threading.Thread, ActionInterface):
             self.shutdown()
         if state == 'device.locked':
             return
+        if action == 'BTN_RESET_LCD':
+            self.display_locked = True
+            time.sleep(0.5)
+            self._init_display()
+            self.display_locked = False
         if action == 'close_menu' or action == 'BTN_HOME':
             if state == 'menu':
                 self.set_state('main')
